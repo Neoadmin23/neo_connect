@@ -29,5 +29,5 @@ jobs:
 
           git remote add source https://github.com/AlphaX-SAAS/neo_connect.git
           git fetch source main
-          git merge source/main --no-edit
+          git merge source/main --no-edit --allow-unrelated-histories
           git push origin HEAD:main
