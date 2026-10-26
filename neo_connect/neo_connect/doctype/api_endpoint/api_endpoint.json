@@ -22,6 +22,7 @@
   "max_records_per_request",
   "cb_2",
   "document_action",
+  "allow_submit",
   "process_async",
   "ignore_permissions",
   "sb_inbound_adv",
@@ -29,6 +30,7 @@
   "row_filters",
   "cb_3",
   "pre_process_hook",
+  "pre_submit_hook",
   "post_process_hook",
   "sb_outbound",
   "outbound_source",
@@ -44,7 +46,8 @@
   "sb_mapping",
   "field_maps",
   "sb_test",
-  "sample_payload"
+  "sample_payload",
+  "magento_integration"
  ],
  "fields": [
   {
@@ -304,6 +307,26 @@
    "label": "Sample Payload (JSON)",
    "options": "JSON",
    "description": "Paste a real partner payload and click <b>Test Mapping</b>. Also shown in the Partner Guide."
+  },
+  {
+   "fieldname": "allow_submit",
+   "fieldtype": "Check",
+   "label": "Allow Partner Submission",
+   "default": "0",
+   "description": "Allow an authorized partner to submit its imported document. ERPNext submit permissions still apply."
+  },
+  {
+   "fieldname": "pre_submit_hook",
+   "fieldtype": "Small Text",
+   "label": "Saved Document Validation Hooks",
+   "description": "Run after saving and before submission, including for drafts and dry runs."
+  },
+  {
+   "fieldname": "magento_integration",
+   "label": "Magento Integration",
+   "fieldtype": "Link",
+   "options": "Magento Integration Settings",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 0,

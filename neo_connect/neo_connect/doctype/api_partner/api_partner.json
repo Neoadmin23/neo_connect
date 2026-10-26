@@ -24,7 +24,8 @@
   "sb_defaults",
   "company",
   "defaults",
-  "handler_settings"
+  "handler_settings",
+  "magento_integration"
  ],
  "fields": [
   {
@@ -150,6 +151,13 @@
    "label": "Handler Settings (JSON)",
    "options": "JSON",
    "description": "Settings read by hooks (see README). Endpoint settings override these."
+  },
+  {
+   "fieldname": "magento_integration",
+   "label": "Magento Integration",
+   "fieldtype": "Link",
+   "options": "Magento Integration Settings",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 0,

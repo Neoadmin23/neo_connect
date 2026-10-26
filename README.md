@@ -1,6 +1,34 @@
 # NeoConnect for ERPNext
 
-**NeoConnect – Commerce & Partner Integrations.** NeoConnect is a configurable API gateway for ERPNext. It is tested on v15 and should also work on v16. Each e-commerce platform, marketplace or vendor becomes an **API Partner** with its own credentials. You create **API Endpoints** in ERPNext and send the partner the generated URL.
+**Current version:** 1.2.0
+
+Repository: [AlphaX-SAAS/neo_connect](https://github.com/AlphaX-SAAS/neo_connect)
+
+## Features
+
+- Complete-order Magento invoices: draft, create-and-submit, or submit an imported draft by order number.
+- Central configuration for dedicated API users, create/submit access, key/secret lifecycle, IP rules, rate limits and HMAC.
+- Shared order deduplication across configured users, with native ERPNext permissions, saved-document reconciliation and concurrent-delivery protection.
+- Append-only activity history, trace IDs, filtered reporting and navigation from configuration to logs and invoices.
+- An importable Postman collection and blank credential environment, with recorded local verification.
+
+## Documentation
+
+| Read this | Purpose |
+| --- | --- |
+| [Introduction and architecture](docs/introduction.md) | Component/DocType diagrams, feature workflows and edge cases |
+| [Magento configuration](docs/MAGENTO_CONFIGURATION.md) | User access, credentials, traceability and Postman setup |
+| [Invoice API contract](docs/POWERTIRE_API.md) | Payload, authentication, create/submit behavior and errors |
+| [Development guide](docs/DEVELOPMENT.md) | Repository structure, extension points, invariants and tests |
+| [Contributing](CONTRIBUTING.md) | Required development and release workflow |
+| [Changelog](CHANGELOG.md) / [Release notes](docs/RELEASE_v1.2.0.md) | Version history, upgrade steps and compatibility |
+| [Verification](docs/VERIFICATION.md) / [Results](docs/TEST_RESULTS.txt) | Actual test coverage and remaining acceptance work |
+| [Postman collection](docs/powertire.postman_collection.json) / [Environment](docs/powertire.postman_environment.json) | Runnable staging API acceptance suite |
+
+
+**PowerTire 1.2.0:** Central configuration, dedicated user access, encrypted credential management, immutable activity history, filtered reporting and a tested Postman collection are available. Start with [Magento configuration](docs/MAGENTO_CONFIGURATION.md), the [API handoff](docs/POWERTIRE_API.md), and [verification and deployment](docs/VERIFICATION.md). The customer site has not been changed. The original sample documentation below describes inherited behavior outside this verified flow.
+
+**NeoConnect – Commerce & Partner Integrations.** NeoConnect is a configurable API gateway for ERPNext. The PowerTire flow is verified on Frappe 15.118.0 / ERPNext 15.119.3; v16 has not been tested. Each e-commerce platform, marketplace or vendor becomes an **API Partner** with its own credentials. You create **API Endpoints** in ERPNext and send the partner the generated URL.
 
 - **Inbound (push):** the partner sends JSON, and ERPNext creates documents from it. Example: Magento sends orders, and ERPNext creates Sales Invoices.
 - **Outbound (pull):** the partner reads data from ERPNext. Examples: stock levels, prices, the item catalogue and invoice status.
@@ -26,14 +54,9 @@ The partner's JSON is converted to ERPNext fields by **field mapping** that you 
         ◄── {data[], page, has_more, next_modified_since}      → Field Map (ERPNext → partner JSON)
 ```
 
-## Quick start: Magento (PowerTire) in 5 minutes
+## Quick start: PowerTire Magento
 
-1. Install the app (see Installation below), then run `bench --site <site> migrate` and `bench restart`.
-2. **API Partner → New:** set Partner Name *Magento*, Platform *Magento* and your **Company**, then Save. Click **Credentials → Generate Credentials** and copy the key and secret.
-3. On the partner, click **Install Integration Pack**, choose **Magento (PowerTire) - Sales Invoice**, and pick the account for the new Modes of Payment (Tap, Tamara, Tabby). This creates the missing fields, the تابي option, the Modes of Payment and the endpoint `magento-sales-invoice`, then runs the **Health Check**.
-4. Fix anything the Health Check shows in red; each line says how. Re-run it from the endpoint with **Health Check** until it says **READY**.
-5. Test with the Postman collection (ping, then each order as a dry run and then for real). Real orders must send SKUs equal to your Item Codes.
-6. At go-live, set **Document Action** on the endpoint to *Submit*. Packs install in *Draft* mode so test invoices never reach ZATCA. Send the Partner Guide to the vendor.
+Install/update the app and migrate the site. Install the bundled `powertire_complete_order_invoice.json` pack, review its company/account/item defaults, then create **Magento Integration Settings** and add dedicated API users there. Use the central configuration buttons to issue credentials and inspect activity. Follow the complete [setup and Postman guide](docs/MAGENTO_CONFIGURATION.md) before customer staging acceptance.
 
 **Other vendors:** load their JSON or spec on an **API Payload Sample** and use **Review & Confirm** (below). Once a vendor works, click **Export Integration Pack** on its endpoint to reuse the setup on another site or for a similar vendor.
 
@@ -41,7 +64,7 @@ The partner's JSON is converted to ERPNext fields by **field mapping** that you 
 
 ```bash
 cd ~/frappe-bench
-bench get-app /path/to/neo_connect      # or a git URL once you push it
+bench get-app git@github.com:AlphaX-SAAS/neo_connect.git --branch main
 bench --site your.site install-app neo_connect
 bench --site your.site migrate
 bench restart
@@ -158,7 +181,7 @@ Frappe wraps every response in `{"message": {...}}`. A push response looks like 
 }}
 ```
 
-If the body isn't valid JSON, Frappe rejects it before the app runs. The vendor gets HTTP 500 with `exc_type: JSONDecodeError`, and nothing is logged in API Request Log.
+Malformed JSON can be rejected by Frappe before the gateway runs. Managed requests with a recognized API key are captured by the request audit hooks, including early failures; unknown credentials cannot be attributed to a central integration.
 
 HTTP status codes:
 
@@ -171,7 +194,7 @@ HTTP status codes:
 - **422** All records failed
 - **429** Rate limited
 
-**Retrying is always safe.** Each record's external ID is stored in **API External Reference**, and the database primary key blocks a second document, even when two requests arrive at the same moment.
+**Retry behavior:** an identical PowerTire order returns its existing invoice. Changed payloads, cancelled/deleted targets and incompatible historical references require reconciliation. The reference lock serializes simultaneous delivery; see the [contract](docs/POWERTIRE_API.md).
 
 ## Magento specifics
 
@@ -304,13 +327,13 @@ Each partner has its own ERPNext user with minimal roles. There is no shared or 
 - Outbound filters are allow-listed per endpoint and the operators are restricted. Partners can't query arbitrary fields.
 - Hook and server-method paths, and expressions, can only be set by System Managers. Expressions run in `frappe.safe_eval`.
 - **Regenerate Secret** or **Revoke Access** cuts a partner off immediately. Disabling the partner also disables its user.
-- Every call is logged in **API Request Log** with the payload, response, IP, duration and error trace. Logs are deleted after 90 days; set `neo_connect_log_days` in `site_config.json` to change this.
+- Every call is logged in **API Request Log** with the payload, response, IP, duration and error trace. Legacy request logs default to 90 days via `neo_connect_log_days` in `site_config.json`. Managed Magento activity and managed partners' detail logs have no automatic expiry.
 
 ## Operations
 
 - **API Request Log** is filterable by partner, endpoint and status. **Reprocess** re-runs a failed or partial request with its stored payload; records already imported are skipped.
-- **API External Reference** maps each shop ID to its ERPNext document, which is useful for support questions like "where is order 000001045?". If the ERPNext document is cancelled, the shop can send the order again and it is re-imported.
-- Use **Process in Background** for large batches. The partner gets `202` and a `request_id`, and the result appears in the log.
+- **API External Reference** maps each shop ID to its ERPNext document, which is useful for support questions like "where is order 000001045?". For PowerTire, cancelled/deleted documents are not recreated automatically; reconcile the existing order identity.
+- Generic integrations can use **Process in Background** for large batches; managed PowerTire endpoints must remain synchronous. The partner gets `202` and a `request_id`, and the result appears in the log.
 
 ## Tests
 
@@ -319,12 +342,10 @@ python -m unittest neo_connect.tests.test_mapper       # engine + presets, no be
 bench --site test.site run-tests --app neo_connect     # inside a bench
 ```
 
-The app has been tested over real HTTP against Frappe/ERPNext **v15** (frappe 15.121, erpnext 15.121). The tests covered:
+The current recorded verification passed **46 unit/mock tests**, **23 invoice HTTP/database tests**, **25 management HTTP/database tests**, and **12 Newman requests / 34 assertions**, on Frappe 15.118.0 / ERPNext 15.119.3. See [test results](docs/TEST_RESULTS.txt), [development verification instructions](docs/DEVELOPMENT.md#verification) and [customer staging requirements](docs/VERIFICATION.md).
 
-- Magento and Standard Order pushes, dry runs, duplicates, partial batches, background mode and reprocessing
-- Update-draft on duplicate
-- The HMAC signature, partner authorization, the IP allow-list and rate limiting
-- All four outbound presets, with filters and pagination
-- Customer, Address and Payment Entry creation, and the VAT and total reconciliation
+The inherited generic presets and workflows above are separate from the verified PowerTire complete-order contract. Payment posting, stock movement, discounts, refunds and partial invoices are outside that contract. Browser interaction acceptance, customer-specific workflows/e-invoicing hooks and v16 compatibility remain pending. No customer production site was changed.
 
-v16 hasn't been tested yet. Run the tests on a staging copy before upgrading.
+## Contributing
+
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). Preserve native permissions, duplicate protection and transaction/audit guarantees. Keep schema, contract, diagrams, tests and release notes together with each behavior change. Submit focused pull requests against `main`; never commit credentials or runtime data.

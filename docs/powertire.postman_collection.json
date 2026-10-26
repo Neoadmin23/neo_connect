@@ -1,0 +1,474 @@
+{
+  "info": {
+    "name": "PowerTire Magento Sales Invoice API v1.2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Creates real invoices on your test site. Run in order using three dedicated configured users: full, second (submit), draft (create only). Secrets belong in a private environment. Each run uses fresh order IDs. See MAGENTO_CONFIGURATION.md."
+  },
+  "variable": [
+    {
+      "key": "order_prefix",
+      "value": ""
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if(pm.info.requestName==='01 Connectivity') pm.collectionVariables.set('order_prefix','PM-'+Date.now()+'-'+Math.random().toString(16).slice(2,8));"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Connectivity",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{api_key}}:{{api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.ping"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(200));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));",
+              "pm.test('Authenticated',()=>pm.expect(pm.response.json().message.ok).to.equal(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Dry run with submit",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{api_key}}:{{api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.push?endpoint={{endpoint}}&submit=1&dry_run=1",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_number\": \"{{order_prefix}}-dry\",\n  \"order_date\": \"2026-10-24T08:00:00Z\",\n  \"status\": \"processing\",\n  \"custom_order_status\": \"Awaiting Installer\",\n  \"erp_executive_code\": \"EXC-001\",\n  \"customer\": {\n    \"email\": \"ahmed@example.com\",\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"is_guest\": false\n  },\n  \"billing_address\": {\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"street\": \"King Fahad Road, Building 5\",\n    \"city\": \"Riyadh\",\n    \"postcode\": \"12271\",\n    \"country_id\": \"SA\",\n    \"telephone\": \"+966501234567\"\n  },\n  \"vehicle\": {\n    \"make\": \"Toyota\",\n    \"model\": \"Camry\",\n    \"year\": \"2022\",\n    \"plate\": \"ABC 1234\",\n    \"vin_number\": \"1HGBH41JXMN109186\"\n  },\n  \"fulfillment\": {\n    \"method\": \"Store Pickup\",\n    \"pickup_date\": \"2026-09-20T00:00:00Z\",\n    \"pickup_time\": \"10:00 AM - 12:00 PM\"\n  },\n  \"installer\": {\n    \"name\": \"PowerTire Riyadh North\",\n    \"name_ar\": \"باور تاير شمال الرياض\",\n    \"address\": \"King Fahad Road, Building 5\",\n    \"address_ar\": \"طريق الملك فهد، مبنى 5\",\n    \"city\": \"Riyadh\",\n    \"city_ar\": \"الرياض\",\n    \"country\": \"SA\",\n    \"phone\": \"+966114567890\",\n    \"email\": \"riyadhnorth@powertire.sa\",\n    \"latitude\": \"24.7136\",\n    \"longitude\": \"46.6753\",\n    \"installer_type\": \"branch\",\n    \"is_mobilevan\": false\n  },\n  \"items\": [\n    {\n      \"sku\": \"TYR-MICH-2254517-XL\",\n      \"name\": \"Michelin Pilot Sport 4 225/45R17 XL\",\n      \"qty_ordered\": 4,\n      \"qty_invoiced\": 4,\n      \"price\": 450.0,\n      \"price_incl_tax\": 517.5,\n      \"row_total\": 1800.0,\n      \"row_total_incl_tax\": 2070.0,\n      \"tax_amount\": 270.0,\n      \"discount_amount\": 0.0,\n      \"brand\": \"Michelin\",\n      \"width\": \"225\",\n      \"height\": \"45\",\n      \"rim\": \"17\",\n      \"speed_index\": \"W\",\n      \"supplier_item_code\": \"MC-PS4-225\"\n    }\n  ],\n  \"totals\": {\n    \"subtotal\": 1800.0,\n    \"shipping_amount\": 0.0,\n    \"shipping_tax_amount\": 0.0,\n    \"discount_amount\": 0.0,\n    \"tax_amount\": 270.0,\n    \"grand_total\": 2070.0\n  },\n  \"payment\": {\n    \"method\": \"tap\",\n    \"method_title\": \"TAP Payment\",\n    \"amount_paid\": 2070.0,\n    \"transaction_id\": \"ch_3abc123xyz\"\n  },\n  \"event\": \"invoice.created\",\n  \"invoice_number\": \"INV-{{order_prefix}}-dry\",\n  \"invoice_date\": \"2026-10-24T09:30:00Z\",\n  \"order_currency_code\": \"SAR\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(200));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));",
+              "pm.test('Dry run',()=>pm.expect(pm.response.json().message.dry_run).to.equal(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Create draft",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{api_key}}:{{api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.push?endpoint={{endpoint}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_number\": \"{{order_prefix}}-draft\",\n  \"order_date\": \"2026-10-24T08:00:00Z\",\n  \"status\": \"processing\",\n  \"custom_order_status\": \"Awaiting Installer\",\n  \"erp_executive_code\": \"EXC-001\",\n  \"customer\": {\n    \"email\": \"ahmed@example.com\",\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"is_guest\": false\n  },\n  \"billing_address\": {\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"street\": \"King Fahad Road, Building 5\",\n    \"city\": \"Riyadh\",\n    \"postcode\": \"12271\",\n    \"country_id\": \"SA\",\n    \"telephone\": \"+966501234567\"\n  },\n  \"vehicle\": {\n    \"make\": \"Toyota\",\n    \"model\": \"Camry\",\n    \"year\": \"2022\",\n    \"plate\": \"ABC 1234\",\n    \"vin_number\": \"1HGBH41JXMN109186\"\n  },\n  \"fulfillment\": {\n    \"method\": \"Store Pickup\",\n    \"pickup_date\": \"2026-09-20T00:00:00Z\",\n    \"pickup_time\": \"10:00 AM - 12:00 PM\"\n  },\n  \"installer\": {\n    \"name\": \"PowerTire Riyadh North\",\n    \"name_ar\": \"باور تاير شمال الرياض\",\n    \"address\": \"King Fahad Road, Building 5\",\n    \"address_ar\": \"طريق الملك فهد، مبنى 5\",\n    \"city\": \"Riyadh\",\n    \"city_ar\": \"الرياض\",\n    \"country\": \"SA\",\n    \"phone\": \"+966114567890\",\n    \"email\": \"riyadhnorth@powertire.sa\",\n    \"latitude\": \"24.7136\",\n    \"longitude\": \"46.6753\",\n    \"installer_type\": \"branch\",\n    \"is_mobilevan\": false\n  },\n  \"items\": [\n    {\n      \"sku\": \"TYR-MICH-2254517-XL\",\n      \"name\": \"Michelin Pilot Sport 4 225/45R17 XL\",\n      \"qty_ordered\": 4,\n      \"qty_invoiced\": 4,\n      \"price\": 450.0,\n      \"price_incl_tax\": 517.5,\n      \"row_total\": 1800.0,\n      \"row_total_incl_tax\": 2070.0,\n      \"tax_amount\": 270.0,\n      \"discount_amount\": 0.0,\n      \"brand\": \"Michelin\",\n      \"width\": \"225\",\n      \"height\": \"45\",\n      \"rim\": \"17\",\n      \"speed_index\": \"W\",\n      \"supplier_item_code\": \"MC-PS4-225\"\n    }\n  ],\n  \"totals\": {\n    \"subtotal\": 1800.0,\n    \"shipping_amount\": 0.0,\n    \"shipping_tax_amount\": 0.0,\n    \"discount_amount\": 0.0,\n    \"tax_amount\": 270.0,\n    \"grand_total\": 2070.0\n  },\n  \"payment\": {\n    \"method\": \"tap\",\n    \"method_title\": \"TAP Payment\",\n    \"amount_paid\": 2070.0,\n    \"transaction_id\": \"ch_3abc123xyz\"\n  },\n  \"event\": \"invoice.created\",\n  \"invoice_number\": \"INV-{{order_prefix}}-draft\",\n  \"invoice_date\": \"2026-10-24T09:30:00Z\",\n  \"order_currency_code\": \"SAR\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(200));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));",
+              "const row=pm.response.json().message.results[0]; pm.collectionVariables.set('draft_name',row.name); pm.test('Draft saved',()=>pm.expect(row.docstatus).to.equal(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Submit saved draft",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{api_key}}:{{api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.submit?endpoint={{endpoint}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_number\": \"{{order_prefix}}-draft\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(200));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));",
+              "const row=pm.response.json().message.results[0]; pm.test('Same invoice submitted',()=>{pm.expect(row.name).to.equal(pm.collectionVariables.get('draft_name'));pm.expect(row.docstatus).to.equal(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Retry submission",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{api_key}}:{{api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.submit?endpoint={{endpoint}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_number\": \"{{order_prefix}}-draft\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(200));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));",
+              "pm.test('Retry keeps invoice',()=>pm.expect(pm.response.json().message.results[0].name).to.equal(pm.collectionVariables.get('draft_name')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Create and submit",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{api_key}}:{{api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.push?endpoint={{endpoint}}&submit=1",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_number\": \"{{order_prefix}}-direct\",\n  \"order_date\": \"2026-10-24T08:00:00Z\",\n  \"status\": \"processing\",\n  \"custom_order_status\": \"Awaiting Installer\",\n  \"erp_executive_code\": \"EXC-001\",\n  \"customer\": {\n    \"email\": \"ahmed@example.com\",\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"is_guest\": false\n  },\n  \"billing_address\": {\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"street\": \"King Fahad Road, Building 5\",\n    \"city\": \"Riyadh\",\n    \"postcode\": \"12271\",\n    \"country_id\": \"SA\",\n    \"telephone\": \"+966501234567\"\n  },\n  \"vehicle\": {\n    \"make\": \"Toyota\",\n    \"model\": \"Camry\",\n    \"year\": \"2022\",\n    \"plate\": \"ABC 1234\",\n    \"vin_number\": \"1HGBH41JXMN109186\"\n  },\n  \"fulfillment\": {\n    \"method\": \"Store Pickup\",\n    \"pickup_date\": \"2026-09-20T00:00:00Z\",\n    \"pickup_time\": \"10:00 AM - 12:00 PM\"\n  },\n  \"installer\": {\n    \"name\": \"PowerTire Riyadh North\",\n    \"name_ar\": \"باور تاير شمال الرياض\",\n    \"address\": \"King Fahad Road, Building 5\",\n    \"address_ar\": \"طريق الملك فهد، مبنى 5\",\n    \"city\": \"Riyadh\",\n    \"city_ar\": \"الرياض\",\n    \"country\": \"SA\",\n    \"phone\": \"+966114567890\",\n    \"email\": \"riyadhnorth@powertire.sa\",\n    \"latitude\": \"24.7136\",\n    \"longitude\": \"46.6753\",\n    \"installer_type\": \"branch\",\n    \"is_mobilevan\": false\n  },\n  \"items\": [\n    {\n      \"sku\": \"TYR-MICH-2254517-XL\",\n      \"name\": \"Michelin Pilot Sport 4 225/45R17 XL\",\n      \"qty_ordered\": 4,\n      \"qty_invoiced\": 4,\n      \"price\": 450.0,\n      \"price_incl_tax\": 517.5,\n      \"row_total\": 1800.0,\n      \"row_total_incl_tax\": 2070.0,\n      \"tax_amount\": 270.0,\n      \"discount_amount\": 0.0,\n      \"brand\": \"Michelin\",\n      \"width\": \"225\",\n      \"height\": \"45\",\n      \"rim\": \"17\",\n      \"speed_index\": \"W\",\n      \"supplier_item_code\": \"MC-PS4-225\"\n    }\n  ],\n  \"totals\": {\n    \"subtotal\": 1800.0,\n    \"shipping_amount\": 0.0,\n    \"shipping_tax_amount\": 0.0,\n    \"discount_amount\": 0.0,\n    \"tax_amount\": 270.0,\n    \"grand_total\": 2070.0\n  },\n  \"payment\": {\n    \"method\": \"tap\",\n    \"method_title\": \"TAP Payment\",\n    \"amount_paid\": 2070.0,\n    \"transaction_id\": \"ch_3abc123xyz\"\n  },\n  \"event\": \"invoice.created\",\n  \"invoice_number\": \"INV-{{order_prefix}}-direct\",\n  \"invoice_date\": \"2026-10-24T09:30:00Z\",\n  \"order_currency_code\": \"SAR\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(200));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));",
+              "const row=pm.response.json().message.results[0];pm.collectionVariables.set('direct_name',row.name);pm.test('Submitted',()=>pm.expect(row.docstatus).to.equal(1));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Retry from another user",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{second_api_key}}:{{second_api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.push?endpoint={{endpoint}}&submit=1",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_number\": \"{{order_prefix}}-direct\",\n  \"order_date\": \"2026-10-24T08:00:00Z\",\n  \"status\": \"processing\",\n  \"custom_order_status\": \"Awaiting Installer\",\n  \"erp_executive_code\": \"EXC-001\",\n  \"customer\": {\n    \"email\": \"ahmed@example.com\",\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"is_guest\": false\n  },\n  \"billing_address\": {\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"street\": \"King Fahad Road, Building 5\",\n    \"city\": \"Riyadh\",\n    \"postcode\": \"12271\",\n    \"country_id\": \"SA\",\n    \"telephone\": \"+966501234567\"\n  },\n  \"vehicle\": {\n    \"make\": \"Toyota\",\n    \"model\": \"Camry\",\n    \"year\": \"2022\",\n    \"plate\": \"ABC 1234\",\n    \"vin_number\": \"1HGBH41JXMN109186\"\n  },\n  \"fulfillment\": {\n    \"method\": \"Store Pickup\",\n    \"pickup_date\": \"2026-09-20T00:00:00Z\",\n    \"pickup_time\": \"10:00 AM - 12:00 PM\"\n  },\n  \"installer\": {\n    \"name\": \"PowerTire Riyadh North\",\n    \"name_ar\": \"باور تاير شمال الرياض\",\n    \"address\": \"King Fahad Road, Building 5\",\n    \"address_ar\": \"طريق الملك فهد، مبنى 5\",\n    \"city\": \"Riyadh\",\n    \"city_ar\": \"الرياض\",\n    \"country\": \"SA\",\n    \"phone\": \"+966114567890\",\n    \"email\": \"riyadhnorth@powertire.sa\",\n    \"latitude\": \"24.7136\",\n    \"longitude\": \"46.6753\",\n    \"installer_type\": \"branch\",\n    \"is_mobilevan\": false\n  },\n  \"items\": [\n    {\n      \"sku\": \"TYR-MICH-2254517-XL\",\n      \"name\": \"Michelin Pilot Sport 4 225/45R17 XL\",\n      \"qty_ordered\": 4,\n      \"qty_invoiced\": 4,\n      \"price\": 450.0,\n      \"price_incl_tax\": 517.5,\n      \"row_total\": 1800.0,\n      \"row_total_incl_tax\": 2070.0,\n      \"tax_amount\": 270.0,\n      \"discount_amount\": 0.0,\n      \"brand\": \"Michelin\",\n      \"width\": \"225\",\n      \"height\": \"45\",\n      \"rim\": \"17\",\n      \"speed_index\": \"W\",\n      \"supplier_item_code\": \"MC-PS4-225\"\n    }\n  ],\n  \"totals\": {\n    \"subtotal\": 1800.0,\n    \"shipping_amount\": 0.0,\n    \"shipping_tax_amount\": 0.0,\n    \"discount_amount\": 0.0,\n    \"tax_amount\": 270.0,\n    \"grand_total\": 2070.0\n  },\n  \"payment\": {\n    \"method\": \"tap\",\n    \"method_title\": \"TAP Payment\",\n    \"amount_paid\": 2070.0,\n    \"transaction_id\": \"ch_3abc123xyz\"\n  },\n  \"event\": \"invoice.created\",\n  \"invoice_number\": \"INV-{{order_prefix}}-direct\",\n  \"invoice_date\": \"2026-10-24T09:30:00Z\",\n  \"order_currency_code\": \"SAR\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(200));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));",
+              "pm.test('Shared order deduplication',()=>pm.expect(pm.response.json().message.results[0].name).to.equal(pm.collectionVariables.get('direct_name')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Draft user cannot submit",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{draft_api_key}}:{{draft_api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.push?endpoint={{endpoint}}&submit=1",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_number\": \"{{order_prefix}}-denied\",\n  \"order_date\": \"2026-10-24T08:00:00Z\",\n  \"status\": \"processing\",\n  \"custom_order_status\": \"Awaiting Installer\",\n  \"erp_executive_code\": \"EXC-001\",\n  \"customer\": {\n    \"email\": \"ahmed@example.com\",\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"is_guest\": false\n  },\n  \"billing_address\": {\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"street\": \"King Fahad Road, Building 5\",\n    \"city\": \"Riyadh\",\n    \"postcode\": \"12271\",\n    \"country_id\": \"SA\",\n    \"telephone\": \"+966501234567\"\n  },\n  \"vehicle\": {\n    \"make\": \"Toyota\",\n    \"model\": \"Camry\",\n    \"year\": \"2022\",\n    \"plate\": \"ABC 1234\",\n    \"vin_number\": \"1HGBH41JXMN109186\"\n  },\n  \"fulfillment\": {\n    \"method\": \"Store Pickup\",\n    \"pickup_date\": \"2026-09-20T00:00:00Z\",\n    \"pickup_time\": \"10:00 AM - 12:00 PM\"\n  },\n  \"installer\": {\n    \"name\": \"PowerTire Riyadh North\",\n    \"name_ar\": \"باور تاير شمال الرياض\",\n    \"address\": \"King Fahad Road, Building 5\",\n    \"address_ar\": \"طريق الملك فهد، مبنى 5\",\n    \"city\": \"Riyadh\",\n    \"city_ar\": \"الرياض\",\n    \"country\": \"SA\",\n    \"phone\": \"+966114567890\",\n    \"email\": \"riyadhnorth@powertire.sa\",\n    \"latitude\": \"24.7136\",\n    \"longitude\": \"46.6753\",\n    \"installer_type\": \"branch\",\n    \"is_mobilevan\": false\n  },\n  \"items\": [\n    {\n      \"sku\": \"TYR-MICH-2254517-XL\",\n      \"name\": \"Michelin Pilot Sport 4 225/45R17 XL\",\n      \"qty_ordered\": 4,\n      \"qty_invoiced\": 4,\n      \"price\": 450.0,\n      \"price_incl_tax\": 517.5,\n      \"row_total\": 1800.0,\n      \"row_total_incl_tax\": 2070.0,\n      \"tax_amount\": 270.0,\n      \"discount_amount\": 0.0,\n      \"brand\": \"Michelin\",\n      \"width\": \"225\",\n      \"height\": \"45\",\n      \"rim\": \"17\",\n      \"speed_index\": \"W\",\n      \"supplier_item_code\": \"MC-PS4-225\"\n    }\n  ],\n  \"totals\": {\n    \"subtotal\": 1800.0,\n    \"shipping_amount\": 0.0,\n    \"shipping_tax_amount\": 0.0,\n    \"discount_amount\": 0.0,\n    \"tax_amount\": 270.0,\n    \"grand_total\": 2070.0\n  },\n  \"payment\": {\n    \"method\": \"tap\",\n    \"method_title\": \"TAP Payment\",\n    \"amount_paid\": 2070.0,\n    \"transaction_id\": \"ch_3abc123xyz\"\n  },\n  \"event\": \"invoice.created\",\n  \"invoice_number\": \"INV-{{order_prefix}}-denied\",\n  \"invoice_date\": \"2026-10-24T09:30:00Z\",\n  \"order_currency_code\": \"SAR\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(403));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Draft user can create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{draft_api_key}}:{{draft_api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.push?endpoint={{endpoint}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_number\": \"{{order_prefix}}-draft-role\",\n  \"order_date\": \"2026-10-24T08:00:00Z\",\n  \"status\": \"processing\",\n  \"custom_order_status\": \"Awaiting Installer\",\n  \"erp_executive_code\": \"EXC-001\",\n  \"customer\": {\n    \"email\": \"ahmed@example.com\",\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"is_guest\": false\n  },\n  \"billing_address\": {\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"street\": \"King Fahad Road, Building 5\",\n    \"city\": \"Riyadh\",\n    \"postcode\": \"12271\",\n    \"country_id\": \"SA\",\n    \"telephone\": \"+966501234567\"\n  },\n  \"vehicle\": {\n    \"make\": \"Toyota\",\n    \"model\": \"Camry\",\n    \"year\": \"2022\",\n    \"plate\": \"ABC 1234\",\n    \"vin_number\": \"1HGBH41JXMN109186\"\n  },\n  \"fulfillment\": {\n    \"method\": \"Store Pickup\",\n    \"pickup_date\": \"2026-09-20T00:00:00Z\",\n    \"pickup_time\": \"10:00 AM - 12:00 PM\"\n  },\n  \"installer\": {\n    \"name\": \"PowerTire Riyadh North\",\n    \"name_ar\": \"باور تاير شمال الرياض\",\n    \"address\": \"King Fahad Road, Building 5\",\n    \"address_ar\": \"طريق الملك فهد، مبنى 5\",\n    \"city\": \"Riyadh\",\n    \"city_ar\": \"الرياض\",\n    \"country\": \"SA\",\n    \"phone\": \"+966114567890\",\n    \"email\": \"riyadhnorth@powertire.sa\",\n    \"latitude\": \"24.7136\",\n    \"longitude\": \"46.6753\",\n    \"installer_type\": \"branch\",\n    \"is_mobilevan\": false\n  },\n  \"items\": [\n    {\n      \"sku\": \"TYR-MICH-2254517-XL\",\n      \"name\": \"Michelin Pilot Sport 4 225/45R17 XL\",\n      \"qty_ordered\": 4,\n      \"qty_invoiced\": 4,\n      \"price\": 450.0,\n      \"price_incl_tax\": 517.5,\n      \"row_total\": 1800.0,\n      \"row_total_incl_tax\": 2070.0,\n      \"tax_amount\": 270.0,\n      \"discount_amount\": 0.0,\n      \"brand\": \"Michelin\",\n      \"width\": \"225\",\n      \"height\": \"45\",\n      \"rim\": \"17\",\n      \"speed_index\": \"W\",\n      \"supplier_item_code\": \"MC-PS4-225\"\n    }\n  ],\n  \"totals\": {\n    \"subtotal\": 1800.0,\n    \"shipping_amount\": 0.0,\n    \"shipping_tax_amount\": 0.0,\n    \"discount_amount\": 0.0,\n    \"tax_amount\": 270.0,\n    \"grand_total\": 2070.0\n  },\n  \"payment\": {\n    \"method\": \"tap\",\n    \"method_title\": \"TAP Payment\",\n    \"amount_paid\": 2070.0,\n    \"transaction_id\": \"ch_3abc123xyz\"\n  },\n  \"event\": \"invoice.created\",\n  \"invoice_number\": \"INV-{{order_prefix}}-draft-role\",\n  \"invoice_date\": \"2026-10-24T09:30:00Z\",\n  \"order_currency_code\": \"SAR\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(200));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));",
+              "pm.test('Draft only',()=>pm.expect(pm.response.json().message.results[0].docstatus).to.equal(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Unknown SKU rejected",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{api_key}}:{{api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.push?endpoint={{endpoint}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_number\": \"{{order_prefix}}-missing-sku\",\n  \"order_date\": \"2026-10-24T08:00:00Z\",\n  \"status\": \"processing\",\n  \"custom_order_status\": \"Awaiting Installer\",\n  \"erp_executive_code\": \"EXC-001\",\n  \"customer\": {\n    \"email\": \"ahmed@example.com\",\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"is_guest\": false\n  },\n  \"billing_address\": {\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"street\": \"King Fahad Road, Building 5\",\n    \"city\": \"Riyadh\",\n    \"postcode\": \"12271\",\n    \"country_id\": \"SA\",\n    \"telephone\": \"+966501234567\"\n  },\n  \"vehicle\": {\n    \"make\": \"Toyota\",\n    \"model\": \"Camry\",\n    \"year\": \"2022\",\n    \"plate\": \"ABC 1234\",\n    \"vin_number\": \"1HGBH41JXMN109186\"\n  },\n  \"fulfillment\": {\n    \"method\": \"Store Pickup\",\n    \"pickup_date\": \"2026-09-20T00:00:00Z\",\n    \"pickup_time\": \"10:00 AM - 12:00 PM\"\n  },\n  \"installer\": {\n    \"name\": \"PowerTire Riyadh North\",\n    \"name_ar\": \"باور تاير شمال الرياض\",\n    \"address\": \"King Fahad Road, Building 5\",\n    \"address_ar\": \"طريق الملك فهد، مبنى 5\",\n    \"city\": \"Riyadh\",\n    \"city_ar\": \"الرياض\",\n    \"country\": \"SA\",\n    \"phone\": \"+966114567890\",\n    \"email\": \"riyadhnorth@powertire.sa\",\n    \"latitude\": \"24.7136\",\n    \"longitude\": \"46.6753\",\n    \"installer_type\": \"branch\",\n    \"is_mobilevan\": false\n  },\n  \"items\": [\n    {\n      \"sku\": \"NONEXISTENT-POSTMAN-SKU\",\n      \"name\": \"Michelin Pilot Sport 4 225/45R17 XL\",\n      \"qty_ordered\": 4,\n      \"qty_invoiced\": 4,\n      \"price\": 450.0,\n      \"price_incl_tax\": 517.5,\n      \"row_total\": 1800.0,\n      \"row_total_incl_tax\": 2070.0,\n      \"tax_amount\": 270.0,\n      \"discount_amount\": 0.0,\n      \"brand\": \"Michelin\",\n      \"width\": \"225\",\n      \"height\": \"45\",\n      \"rim\": \"17\",\n      \"speed_index\": \"W\",\n      \"supplier_item_code\": \"MC-PS4-225\"\n    }\n  ],\n  \"totals\": {\n    \"subtotal\": 1800.0,\n    \"shipping_amount\": 0.0,\n    \"shipping_tax_amount\": 0.0,\n    \"discount_amount\": 0.0,\n    \"tax_amount\": 270.0,\n    \"grand_total\": 2070.0\n  },\n  \"payment\": {\n    \"method\": \"tap\",\n    \"method_title\": \"TAP Payment\",\n    \"amount_paid\": 2070.0,\n    \"transaction_id\": \"ch_3abc123xyz\"\n  },\n  \"event\": \"invoice.created\",\n  \"invoice_number\": \"INV-{{order_prefix}}-missing-sku\",\n  \"invoice_date\": \"2026-10-24T09:30:00Z\",\n  \"order_currency_code\": \"SAR\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(422));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));",
+              "pm.test('SKU validation error',()=>pm.expect(pm.response.json().message.results[0].error).to.include('Item not found'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Changed retry rejected",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{api_key}}:{{api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/method/neo_connect.api.push?endpoint={{endpoint}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_number\": \"{{order_prefix}}-direct\",\n  \"order_date\": \"2026-10-24T08:00:00Z\",\n  \"status\": \"processing\",\n  \"custom_order_status\": \"Awaiting Installer\",\n  \"erp_executive_code\": \"EXC-001\",\n  \"customer\": {\n    \"email\": \"ahmed@example.com\",\n    \"firstname\": \"Changed payload\",\n    \"is_guest\": false\n  },\n  \"billing_address\": {\n    \"firstname\": \"Ahmed Al-Rashidi\",\n    \"street\": \"King Fahad Road, Building 5\",\n    \"city\": \"Riyadh\",\n    \"postcode\": \"12271\",\n    \"country_id\": \"SA\",\n    \"telephone\": \"+966501234567\"\n  },\n  \"vehicle\": {\n    \"make\": \"Toyota\",\n    \"model\": \"Camry\",\n    \"year\": \"2022\",\n    \"plate\": \"ABC 1234\",\n    \"vin_number\": \"1HGBH41JXMN109186\"\n  },\n  \"fulfillment\": {\n    \"method\": \"Store Pickup\",\n    \"pickup_date\": \"2026-09-20T00:00:00Z\",\n    \"pickup_time\": \"10:00 AM - 12:00 PM\"\n  },\n  \"installer\": {\n    \"name\": \"PowerTire Riyadh North\",\n    \"name_ar\": \"باور تاير شمال الرياض\",\n    \"address\": \"King Fahad Road, Building 5\",\n    \"address_ar\": \"طريق الملك فهد، مبنى 5\",\n    \"city\": \"Riyadh\",\n    \"city_ar\": \"الرياض\",\n    \"country\": \"SA\",\n    \"phone\": \"+966114567890\",\n    \"email\": \"riyadhnorth@powertire.sa\",\n    \"latitude\": \"24.7136\",\n    \"longitude\": \"46.6753\",\n    \"installer_type\": \"branch\",\n    \"is_mobilevan\": false\n  },\n  \"items\": [\n    {\n      \"sku\": \"TYR-MICH-2254517-XL\",\n      \"name\": \"Michelin Pilot Sport 4 225/45R17 XL\",\n      \"qty_ordered\": 4,\n      \"qty_invoiced\": 4,\n      \"price\": 450.0,\n      \"price_incl_tax\": 517.5,\n      \"row_total\": 1800.0,\n      \"row_total_incl_tax\": 2070.0,\n      \"tax_amount\": 270.0,\n      \"discount_amount\": 0.0,\n      \"brand\": \"Michelin\",\n      \"width\": \"225\",\n      \"height\": \"45\",\n      \"rim\": \"17\",\n      \"speed_index\": \"W\",\n      \"supplier_item_code\": \"MC-PS4-225\"\n    }\n  ],\n  \"totals\": {\n    \"subtotal\": 1800.0,\n    \"shipping_amount\": 0.0,\n    \"shipping_tax_amount\": 0.0,\n    \"discount_amount\": 0.0,\n    \"tax_amount\": 270.0,\n    \"grand_total\": 2070.0\n  },\n  \"payment\": {\n    \"method\": \"tap\",\n    \"method_title\": \"TAP Payment\",\n    \"amount_paid\": 2070.0,\n    \"transaction_id\": \"ch_3abc123xyz\"\n  },\n  \"event\": \"invoice.created\",\n  \"invoice_number\": \"INV-{{order_prefix}}-direct\",\n  \"invoice_date\": \"2026-10-24T09:30:00Z\",\n  \"order_currency_code\": \"SAR\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(422));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));",
+              "pm.test('Changed source rejected',()=>pm.expect(pm.response.json().message.results[0].error).to.include('different content'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Native REST bypass denied",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "token {{api_key}}:{{api_secret}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/resource/Sales Invoice"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Expected HTTP status',()=>pm.response.to.have.status(403));",
+              "pm.test('Trace ID returned',()=>pm.expect(pm.response.headers.get('X-NeoConnect-Trace-ID')).to.match(/^[a-f0-9]{32}$/));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

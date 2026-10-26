@@ -137,7 +137,7 @@ def _customer_from_contact(child_doctype, field, value):
 
 
 def _create_customer(ctx, name, email, phone):
-    ignore = True  # the integration user may not have Contact/Address rights
+    ignore = bool(ctx.endpoint.ignore_permissions)
     customer = frappe.get_doc({
         "doctype": "Customer",
         "customer_name": name,
@@ -404,7 +404,7 @@ def _resolve_cost_center(ctx, value, company):
         "company": company,
         "is_group": 0,
     })
-    cc.flags.ignore_permissions = True
+    cc.flags.ignore_permissions = bool(ctx.endpoint.ignore_permissions)
     cc.insert()
     ctx.warnings.append(_("Created Cost Center {0}").format(cc.name))
     return cc.name
@@ -523,7 +523,7 @@ def create_payment(ctx):
     pe.reference_no = str(get_path(ctx.record, _cfg(ctx, "payment_reference_path", "increment_id"))
                           or ctx.external_id or doc.name)
     pe.reference_date = getdate(doc.posting_date)
-    pe.flags.ignore_permissions = True
+    pe.flags.ignore_permissions = bool(ctx.endpoint.ignore_permissions)
     pe.insert()
     pe.submit()
     ctx.warnings.append(_("Payment Entry {0} created").format(pe.name))

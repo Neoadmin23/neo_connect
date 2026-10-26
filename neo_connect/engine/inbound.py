@@ -3,11 +3,13 @@
 import hashlib
 import json
 import time
+import uuid
 
 import frappe
 from frappe import _
 from frappe.utils import cint, strip_html
 
+from neo_connect.access import reference_scope
 from .company_names import LinkResolver, get_abbr, with_suffix
 from .mapper import MappingError, extract_records, get_path, map_inbound, split_erp_field
 from .security import GatewayError
@@ -40,7 +42,7 @@ def make_lookup(partner, company=None, settings=None):
         if row.get("lookup_endpoint"):
             result = frappe.db.get_value(
                 "API External Reference",
-                reference_name(partner.name, row["lookup_endpoint"], value),
+                reference_name(reference_scope(partner), row["lookup_endpoint"], value),
                 "reference_name",
             )
             label = f"Record from endpoint {row['lookup_endpoint']}"
@@ -196,18 +198,29 @@ class Processor:
             if external_id in (None, ""):
                 return {"status": "Failed", "error": _("Missing external id at '{0}'").format(ep.external_id_path)}
             external_id = str(external_id)
+            if len(external_id) > 140:
+                raise MappingError("External id must not exceed 140 characters")
 
         base = {"external_id": external_id}
         update_target = None
-        ref_key = reference_name(self.partner.name, ep.name, external_id) if external_id else None
+        ref_key = reference_name(reference_scope(self.partner), ep.name, external_id) if external_id else None
 
         if ref_key:
-            ref = frappe.db.get_value("API External Reference", ref_key,
-                                      ["reference_doctype", "reference_name"], as_dict=True)
-            if ref and ref.reference_name and frappe.db.exists(ref.reference_doctype, ref.reference_name):
-                ds = frappe.db.get_value(ref.reference_doctype, ref.reference_name, "docstatus")
-                if ds != 2:  # cancelled documents can be re-imported
-                    found = dict(base, doctype=ref.reference_doctype, name=ref.reference_name)
+            digest = hashlib.sha256(json.dumps(record, sort_keys=True, ensure_ascii=False,
+                                                allow_nan=False).encode()).hexdigest()
+            ref = self.claim_reference(ref_key, external_id, digest)
+            if ref and self.settings.get("strict_invoice_identity") and ref.payload_hash != digest:
+                raise MappingError("Invoice id already received with different content; manual reconciliation required")
+            if ref and ref.reference_name:
+                ds = frappe.db.get_value(ref.reference_doctype, ref.reference_name, "docstatus", for_update=True)
+                if ds is None and self.settings.get("strict_invoice_identity"):
+                    raise MappingError("Invoice reference has no target document; manual reconciliation required")
+                if ds == 2 and self.settings.get("strict_invoice_identity"):
+                    raise MappingError("Previously imported invoice was cancelled; manual reconciliation required")
+                if ds is not None and ds != 2:  # cancelled documents can be re-imported
+                    found = dict(base, doctype=ref.reference_doctype, name=ref.reference_name, docstatus=ds)
+                    if ds == 0 and self.wants_submit():
+                        return self.submit_existing(record, external_id, ref_key, ref.reference_name)
                     policy = ep.on_duplicate or "Skip"
                     if policy == "Update Draft" and ds == 0:
                         update_target = ref.reference_name
@@ -216,6 +229,9 @@ class Processor:
                                     error=_("Already imported as {0}").format(ref.reference_name))
                     else:
                         return dict(found, status="Duplicate", message=_("Already imported"))
+            elif ref and self.settings.get("strict_invoice_identity"):
+                raise MappingError("Invoice reference has no target document; manual reconciliation required")
+
 
         ctx = self.build(record, external_id)
         if ctx.errors:
@@ -240,10 +256,8 @@ class Processor:
             doc.insert()
             status = "Created"
 
-        if ep.document_action == "Submit" and doc.docstatus == 0:
-            doc.submit()
-
         ctx.document = doc
+        self.finalize_document(ctx, submit=self.wants_submit())
         if ref_key:
             self.save_reference(ref_key, external_id, doc)
 
@@ -256,18 +270,72 @@ class Processor:
             out["warnings"] = ctx.warnings
         return out
 
+    def claim_reference(self, key, external_id, digest):
+        """A no-op UPSERT takes an exclusive row lock before touching invoices.
+
+        In MariaDB a failed plain INSERT retains a shared duplicate-key lock;
+        upgrading several such locks with SELECT FOR UPDATE can deadlock.
+        """
+        token = uuid.uuid4().hex
+        now = frappe.utils.now_datetime()
+        user = frappe.session.user
+        columns = "name,creation,modified,owner,modified_by,docstatus,idx,partner,endpoint,external_id,payload_hash,last_log,reservation_token,magento_integration"
+        placeholders = ",".join(["%s"] * 14)
+        values = (key, now, now, user, user, 0, 0, self.partner.name,
+                  self.endpoint.name, external_id, digest, self.log_name, token, getattr(self.partner, "magento_integration", None))
+        frappe.db.multisql({
+            "mariadb": f"INSERT INTO `tabAPI External Reference` ({columns}) VALUES ({placeholders}) ON DUPLICATE KEY UPDATE name=VALUES(name)",
+            "postgres": f'INSERT INTO "tabAPI External Reference" ({columns}) VALUES ({placeholders}) ON CONFLICT (name) DO UPDATE SET name=EXCLUDED.name',
+        }, values)
+        ref = frappe.db.get_value("API External Reference", key,
+                                  ["reference_doctype", "reference_name", "payload_hash", "reservation_token"],
+                                  as_dict=True, for_update=True)
+        if ref and ref.reservation_token == token:
+            return None  # This transaction owns the newly inserted reservation.
+        if not ref:
+            raise MappingError("Invoice reference changed; retry the identical payload")
+        return ref
+
+    def wants_submit(self):
+        return bool(getattr(self, "submit_requested", False) or self.endpoint.document_action == "Submit")
+
+    def finalize_document(self, ctx, submit=False):
+        run_hooks(getattr(self.endpoint, "pre_submit_hook", None), ctx)
+        if ctx.errors:
+            raise MappingError("; ".join(ctx.errors))
+        if submit:
+            # Check real permissions even if a generic endpoint ignores insert permissions.
+            frappe.has_permission(ctx.document.doctype, "submit", doc=ctx.document, throw=True)
+            if not getattr(self, "dry_run", False) and ctx.document.docstatus == 0:
+                ctx.document.flags.ignore_permissions = False
+                ctx.document.submit()
+
+    def submit_existing(self, record, external_id, ref_key, name):
+        doc = frappe.get_doc(self.endpoint.reference_doctype, name, for_update=True)
+        frappe.has_permission(doc.doctype, "read", doc=doc, throw=True)
+        ctx = frappe._dict(endpoint=self.endpoint, partner=self.partner, record=record,
+                           doc=doc.as_dict(), settings=self.settings, errors=[], warnings=[],
+                           external_id=external_id, document=doc, log_name=self.log_name)
+        self.finalize_document(ctx, submit=True)
+        self.save_reference(ref_key, external_id, doc)
+        return dict(external_id=external_id, status="Validated" if getattr(self, "dry_run", False) else "Submitted",
+                    doctype=doc.doctype, name=None if getattr(self, "dry_run", False) else doc.name,
+                    docstatus=doc.docstatus, grand_total=doc.get("grand_total"), warnings=ctx.warnings)
+
     def save_reference(self, ref_key, external_id, doc):
         values = {"reference_doctype": doc.doctype, "reference_name": doc.name, "last_log": self.log_name}
-        if frappe.db.exists("API External Reference", ref_key):
-            frappe.db.set_value("API External Reference", ref_key, values)
-        else:
-            frappe.get_doc(dict(
-                values, doctype="API External Reference", partner=self.partner.name,
-                endpoint=self.endpoint.name, external_id=external_id,
-            )).insert(ignore_permissions=True)
+        # claim_reference (or the submit lookup) already owns this row lock.
+        frappe.db.set_value("API External Reference", ref_key, values)
 
     # -- whole payload -------------------------------------------------------
-    def process_payload(self, payload, dry_run=False):
+    def process_payload(self, payload, dry_run=False, submit=False):
+        self.dry_run = bool(dry_run)
+        self.submit_requested = bool(submit)
+        if submit:
+            if not getattr(self.endpoint, "allow_submit", False):
+                raise GatewayError("Partner submission is disabled for this endpoint", 403)
+            if not frappe.has_permission(self.endpoint.reference_doctype, "submit"):
+                raise GatewayError("The API user does not have submit permission", 403)
         records = extract_records(payload, self.endpoint.records_path)
         if not records:
             raise GatewayError(_("No records found in payload"), 400)
@@ -277,6 +345,8 @@ class Processor:
 
         results = []
         for i, record in enumerate(records):
+            # Lookups may contain masters created in a previous rolled-back record.
+            self.lookup = make_lookup(self.partner, self.company, self.settings)
             sp = f"cc_rec_{i}"
             frappe.db.savepoint(sp)
             try:
@@ -288,6 +358,8 @@ class Processor:
                 if dry_run and res["status"] in ("Created", "Updated"):
                     res["status"] = "Validated"
                     res["name"] = None
+            except (frappe.QueryDeadlockError, frappe.QueryTimeoutError):
+                raise  # The API owns the complete transaction rollback.
             except Exception as e:  # noqa: BLE001 - isolate each record
                 frappe.db.rollback(save_point=sp)
                 res = {"status": "Failed", "error": clean_error(e)}
@@ -311,7 +383,7 @@ def summarize(results):
     counts = {}
     for r in results:
         counts[r["status"]] = counts.get(r["status"], 0) + 1
-    ok = counts.get("Created", 0) + counts.get("Updated", 0) + counts.get("Validated", 0)
+    ok = sum(counts.get(k, 0) for k in ("Created", "Updated", "Validated", "Submitted"))
     failed = counts.get("Failed", 0)
     dup = counts.get("Duplicate", 0)
     if failed and (ok or dup):
@@ -337,6 +409,11 @@ def summarize(results):
 # ---------------------------------------------------------------------------
 
 def new_log(direction, endpoint=None, partner=None, payload_text=None, query=None):
+    from neo_connect.audit import encoded
+    # Valid JSON snapshots retain business data while credential fields are redacted.
+    if payload_text:
+        try: payload_text=encoded(json.loads(payload_text))
+        except ValueError: pass
     log = frappe.get_doc({
         "doctype": "API Request Log",
         "direction": direction,
@@ -358,7 +435,7 @@ def finish_log(log, result, started, error=None):
     log.http_status = result.get("http_status")
     summary = result.get("summary") or {}
     log.record_count = summary.get("total", 0)
-    log.success_count = sum(summary.get(k, 0) for k in ("Created", "Updated", "Validated", "Returned"))
+    log.success_count = sum(summary.get(k, 0) for k in ("Created", "Updated", "Validated", "Submitted", "Returned"))
     log.failed_count = summary.get("Failed", 0)
     log.duplicate_count = summary.get("Duplicate", 0)
     log.duration_ms = round((time.time() - started) * 1000, 1)
@@ -370,7 +447,13 @@ def finish_log(log, result, started, error=None):
     if first:
         log.reference_doctype = first.get("doctype")
         log.reference_name = first.get("name")
+    # The processor already validated/locked the target. A duplicate request's
+    # repeatable-read snapshot may predate that target, so link validation on
+    # this internal audit log must not re-read the invoice through a stale snapshot.
+    log.flags.ignore_links = True
     log.save(ignore_permissions=True)
+    from neo_connect.audit import from_log
+    from_log(log)
 
 
 def process_log(log_name, as_user=None):
@@ -379,9 +462,23 @@ def process_log(log_name, as_user=None):
     started = time.time()
     endpoint = frappe.get_doc("API Endpoint", log.endpoint)
     partner = frappe.get_doc("API Partner", log.partner)
-    if as_user:
-        frappe.set_user(as_user)
+    # Workers/reprocess calls must use the partner's current permissions.
+    # Never inherit the worker's Administrator session.
+    from .security import authorize
+    original_user = frappe.session.user
+    frappe.local.magento_audit_actor=original_user
     try:
+        user = partner.user
+        if not endpoint.enabled or not partner.enabled or not user or not frappe.db.get_value("User", user, "enabled"):
+            raise GatewayError("Endpoint, partner or partner user is disabled", 403)
+        authorize(endpoint, partner)
+        if getattr(partner,'magento_integration',None):
+            from neo_connect.access import enforce_endpoint,identity
+            enforce_endpoint(endpoint,partner)
+            info=identity(user)
+            if not info.row.can_create or (endpoint.document_action=='Submit' and not info.row.can_submit):
+                raise GatewayError('Current Magento user capabilities do not allow reprocessing',403)
+        frappe.set_user(user)
         payload = json.loads(log.payload or "null")
         result = Processor(endpoint, partner, log.name).process_payload(payload, dry_run=cint(log.dry_run))
         finish_log(log, result, started)
@@ -391,6 +488,9 @@ def process_log(log_name, as_user=None):
         frappe.db.rollback()
         log.reload()
         finish_log(log, {"status": "Failed", "http_status": 500}, started, frappe.get_traceback())
+    finally:
+        frappe.set_user(original_user)
+        frappe.local.magento_audit_actor=None
     log.db_set("attempts", cint(log.attempts) + 1)
     frappe.db.commit()
     return log

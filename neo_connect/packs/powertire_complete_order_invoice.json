@@ -1,0 +1,251 @@
+{
+  "pack": "PowerTire complete order sales invoice",
+  "version": 1,
+  "platform": "Magento",
+  "description": "Complete-order invoice API supporting draft creation and authorized submission; customer staging validation required.",
+  "custom_fields": [
+    {
+      "dt": "Sales Invoice",
+      "fieldname": "custom_magento_order_number",
+      "label": "Magento Order Number",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "insert_after": "po_no"
+    },
+    {
+      "dt": "Sales Invoice",
+      "fieldname": "custom_magento_invoice_number",
+      "label": "Magento Invoice Number",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "insert_after": "po_no"
+    },
+    {
+      "dt": "Sales Invoice",
+      "fieldname": "custom_magento_payload",
+      "label": "Magento Invoice Data",
+      "fieldtype": "Long Text",
+      "read_only": 1,
+      "insert_after": "remarks"
+    }
+  ],
+  "select_options": [],
+  "modes_of_payment": [],
+  "endpoint": {
+    "endpoint_title": "PowerTire complete order sales invoice",
+    "slug": "powertire-sales-invoice",
+    "direction": "Inbound",
+    "enabled": 1,
+    "reference_doctype": "Sales Invoice",
+    "description": "One invoice per complete Magento order. Supports draft creation and authorized submission after validation.",
+    "records_path": "",
+    "external_id_path": "order_number",
+    "on_duplicate": "Skip",
+    "max_records_per_request": 1,
+    "document_action": "Save as Draft",
+    "allow_submit": 1,
+    "process_async": 0,
+    "ignore_permissions": 0,
+    "defaults": {
+      "set_posting_time": 1,
+      "update_stock": 0,
+      "is_pos": 0,
+      "disable_rounded_total": 1,
+      "taxes_and_charges": "{{company.default_sales_tax_template}}"
+    },
+    "row_filters": {},
+    "pre_process_hook": "neo_connect.handlers.powertire.prepare_invoice",
+    "pre_submit_hook": "neo_connect.handlers.powertire.reconcile_invoice",
+    "post_process_hook": "",
+    "handler_settings": {
+      "strict_invoice_identity": 1,
+      "customer_email_path": "customer.email",
+      "customer_name_paths": [
+        "customer.firstname"
+      ],
+      "customer_phone_path": "billing_address.telephone",
+      "billing_address_path": "billing_address",
+      "address_map": {
+        "line1": "street",
+        "city": "city",
+        "state": "region",
+        "pincode": "postcode",
+        "country_code": "country_id"
+      },
+      "customer_fields": {},
+      "update_customer_fields": 0,
+      "shipping_amount_path": "totals.shipping_amount",
+      "shipping_item": "",
+      "discount_amount_path": "totals.discount_amount",
+      "create_payment": 0
+    },
+    "field_maps": [
+      {
+        "external_path": "order_number",
+        "erp_field": "po_no",
+        "transform": "Text",
+        "required": 1
+      },
+      {
+        "external_path": "order_date",
+        "erp_field": "po_date",
+        "transform": "Date",
+        "required": 1
+      },
+      {
+        "external_path": "invoice_date",
+        "erp_field": "posting_date",
+        "transform": "Date",
+        "required": 1
+      },
+      {
+        "external_path": "invoice_date",
+        "erp_field": "posting_time",
+        "transform": "Time",
+        "required": 1
+      },
+      {
+        "external_path": "invoice_date",
+        "erp_field": "due_date",
+        "transform": "Date",
+        "required": 1
+      },
+      {
+        "external_path": "order_currency_code",
+        "erp_field": "currency",
+        "transform": "Upper",
+        "required": 1
+      },
+      {
+        "external_path": "customer.email",
+        "erp_field": "contact_email",
+        "transform": "Lower",
+        "required": 1
+      },
+      {
+        "external_path": "order_number",
+        "erp_field": "custom_magento_order_number",
+        "transform": "Text",
+        "required": 1
+      },
+      {
+        "external_path": "invoice_number",
+        "erp_field": "custom_magento_invoice_number",
+        "transform": "Text"
+      },
+      {
+        "external_path": "items[].sku",
+        "erp_field": "items.item_code",
+        "transform": "Lookup",
+        "required": 1,
+        "lookup_doctype": "Item",
+        "lookup_field": "item_code",
+        "if_not_found": "Error"
+      },
+      {
+        "external_path": "items[].qty_ordered",
+        "erp_field": "items.qty",
+        "transform": "Float",
+        "required": 1
+      },
+      {
+        "external_path": "items[].price",
+        "erp_field": "items.rate",
+        "transform": "Float",
+        "required": 1
+      },
+      {
+        "external_path": "items[].name",
+        "erp_field": "items.description",
+        "transform": "Text"
+      }
+    ]
+  },
+  "sample_payloads": [
+    {
+      "order_number": "PT-289335",
+      "order_date": "2026-09-15T10:30:00Z",
+      "status": "processing",
+      "custom_order_status": "Awaiting Installer",
+      "erp_executive_code": "EXC-001",
+      "customer": {
+        "email": "ahmed@example.com",
+        "firstname": "Ahmed Al-Rashidi",
+        "is_guest": false
+      },
+      "billing_address": {
+        "firstname": "Ahmed Al-Rashidi",
+        "street": "King Fahad Road, Building 5",
+        "city": "Riyadh",
+        "postcode": "12271",
+        "country_id": "SA",
+        "telephone": "+966501234567"
+      },
+      "vehicle": {
+        "make": "Toyota",
+        "model": "Camry",
+        "year": "2022",
+        "plate": "ABC 1234",
+        "vin_number": "1HGBH41JXMN109186"
+      },
+      "fulfillment": {
+        "method": "Store Pickup",
+        "pickup_date": "2026-09-20T00:00:00Z",
+        "pickup_time": "10:00 AM - 12:00 PM"
+      },
+      "installer": {
+        "name": "PowerTire Riyadh North",
+        "name_ar": "باور تاير شمال الرياض",
+        "address": "King Fahad Road, Building 5",
+        "address_ar": "طريق الملك فهد، مبنى 5",
+        "city": "Riyadh",
+        "city_ar": "الرياض",
+        "country": "SA",
+        "phone": "+966114567890",
+        "email": "riyadhnorth@powertire.sa",
+        "latitude": "24.7136",
+        "longitude": "46.6753",
+        "installer_type": "branch",
+        "is_mobilevan": false
+      },
+      "items": [
+        {
+          "sku": "TYR-MICH-2254517-XL",
+          "name": "Michelin Pilot Sport 4 225/45R17 XL",
+          "qty_ordered": 4,
+          "qty_invoiced": 4,
+          "price": 450.0,
+          "price_incl_tax": 517.5,
+          "row_total": 1800.0,
+          "row_total_incl_tax": 2070.0,
+          "tax_amount": 270.0,
+          "discount_amount": 0.0,
+          "brand": "Michelin",
+          "width": "225",
+          "height": "45",
+          "rim": "17",
+          "speed_index": "W",
+          "supplier_item_code": "MC-PS4-225"
+        }
+      ],
+      "totals": {
+        "subtotal": 1800.0,
+        "shipping_amount": 0.0,
+        "shipping_tax_amount": 0.0,
+        "discount_amount": 0.0,
+        "tax_amount": 270.0,
+        "grand_total": 2070.0
+      },
+      "payment": {
+        "method": "tap",
+        "method_title": "TAP Payment",
+        "amount_paid": 2070.0,
+        "transaction_id": "ch_3abc123xyz"
+      },
+      "event": "invoice.created",
+      "invoice_number": "PT-INV-289335",
+      "invoice_date": "2026-09-16T10:30:00Z",
+      "order_currency_code": "SAR"
+    }
+  ]
+}

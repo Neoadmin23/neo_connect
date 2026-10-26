@@ -1,0 +1,18 @@
+{
+  "doctype": "Report",
+  "name": "Magento API Activity Report",
+  "report_name": "Magento API Activity Report",
+  "ref_doctype": "Magento API Activity",
+  "report_type": "Script Report",
+  "is_standard": "Yes",
+  "module": "Neo Connect",
+  "disabled": 0,
+  "roles": [
+    {
+      "role": "System Manager"
+    },
+    {
+      "role": "Accounts Manager"
+    }
+  ]
+}

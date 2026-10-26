@@ -1,0 +1,51 @@
+test_parse_array_and_invalid (test_analyzer.TestAnalyzer.test_parse_array_and_invalid) ... ok
+test_parse_markdown_with_trailing_commas (test_analyzer.TestAnalyzer.test_parse_markdown_with_trailing_commas) ... ok
+test_profile_presence (test_analyzer.TestAnalyzer.test_profile_presence) ... ok
+test_suggest (test_analyzer.TestAnalyzer.test_suggest) ... ok
+test_customer_fetched_fields_and_proposals (test_analyzer.TestSpecAndGaps.test_customer_fetched_fields_and_proposals) ... ok
+test_spec_tables_and_reconcile (test_analyzer.TestSpecAndGaps.test_spec_tables_and_reconcile) ... ok
+test_batch_lookup_is_rebuilt_after_rollback (test_inbound_safety.TestInboundSafety.test_batch_lookup_is_rebuilt_after_rollback) ... ok
+test_cancelled_invoice_is_not_recreated (test_inbound_safety.TestInboundSafety.test_cancelled_invoice_is_not_recreated) ... ok
+test_changed_retry_requires_reconciliation (test_inbound_safety.TestInboundSafety.test_changed_retry_requires_reconciliation) ... ok
+test_competing_reservation_cannot_create_invoice (test_inbound_safety.TestInboundSafety.test_competing_reservation_cannot_create_invoice) ... ok
+test_dry_run_never_submits_document (test_inbound_safety.TestInboundSafety.test_dry_run_never_submits_document) ... ok
+test_identical_retry_returns_existing_document (test_inbound_safety.TestInboundSafety.test_identical_retry_returns_existing_document) ... ok
+test_missing_target_is_not_recreated (test_inbound_safety.TestInboundSafety.test_missing_target_is_not_recreated) ... ok
+test_native_submit_permission_is_required (test_inbound_safety.TestInboundSafety.test_native_submit_permission_is_required) ... ok
+test_requested_submit_requires_endpoint_opt_in (test_inbound_safety.TestInboundSafety.test_requested_submit_requires_endpoint_opt_in) ... ok
+test_reservation_precedes_document_creation (test_inbound_safety.TestInboundSafety.test_reservation_precedes_document_creation) ... ok
+test_submitted_status_counts_as_success (test_inbound_safety.TestInboundSafety.test_submitted_status_counts_as_success) ... ok
+test_validation_failure_prevents_submission (test_inbound_safety.TestInboundSafety.test_validation_failure_prevents_submission) ... ok
+test_validation_runs_before_submit (test_inbound_safety.TestInboundSafety.test_validation_runs_before_submit) ... ok
+test_custom_json (test_mapper.TestMagentoCustomPreset.test_custom_json) ... ok
+test_lookup_error_is_reported (test_mapper.TestMagentoPreset.test_lookup_error_is_reported) ... ok
+test_maps_sample (test_mapper.TestMagentoPreset.test_maps_sample) ... ok
+test_required_missing (test_mapper.TestMagentoPreset.test_required_missing) ... ok
+test_items_catalog (test_mapper.TestOutbound.test_items_catalog) ... ok
+test_nested_output (test_mapper.TestOutbound.test_nested_output) ... ok
+test_extract_records (test_mapper.TestPaths.test_extract_records) ... ok
+test_get_path (test_mapper.TestPaths.test_get_path) ... ok
+test_sales_invoice (test_mapper.TestStandardPreset.test_sales_invoice) ... ok
+test_sales_order_scalar_into_child (test_mapper.TestStandardPreset.test_sales_order_scalar_into_child) ... ok
+test_basic (test_mapper.TestTransforms.test_basic) ... ok
+test_dates (test_mapper.TestTransforms.test_dates) ... ok
+test_remove_company_abbr (test_mapper.TestTransforms.test_remove_company_abbr) ... ok
+test_timezone (test_mapper.TestTransforms.test_timezone) ... ok
+test_value_map_lookup_expression (test_mapper.TestTransforms.test_value_map_lookup_expression) ... ok
+test_bad_numbers_rejected (test_powertire_invoice.TestPowerTireInvoice.test_bad_numbers_rejected) ... ok
+test_complete_invoice (test_powertire_invoice.TestPowerTireInvoice.test_complete_invoice) ... ok
+test_invoice_date_requires_timezone (test_powertire_invoice.TestPowerTireInvoice.test_invoice_date_requires_timezone) ... ok
+test_maps_actual_invoice_date_and_ordered_qty (test_powertire_invoice.TestPowerTireInvoice.test_maps_actual_invoice_date_and_ordered_qty) ... ok
+test_order_number_required (test_powertire_invoice.TestPowerTireInvoice.test_order_number_required) ... ok
+test_order_snapshot_is_not_an_invoice (test_powertire_invoice.TestPowerTireInvoice.test_order_snapshot_is_not_an_invoice) ... ok
+test_overpayment_rejected (test_powertire_invoice.TestPowerTireInvoice.test_overpayment_rejected) ... ok
+test_partial_invoice_rejected (test_powertire_invoice.TestPowerTireInvoice.test_partial_invoice_rejected) ... ok
+test_refund_cancel_and_discount_fail_closed (test_powertire_invoice.TestPowerTireInvoice.test_refund_cancel_and_discount_fail_closed) ... ok
+test_shipping_and_its_tax (test_powertire_invoice.TestPowerTireInvoice.test_shipping_and_its_tax) ... ok
+test_tax_and_total_must_reconcile (test_powertire_invoice.TestPowerTireInvoice.test_tax_and_total_must_reconcile) ... ok
+test_unpaid_cod_stays_unpaid (test_powertire_invoice.TestPowerTireInvoice.test_unpaid_cod_stays_unpaid) ... ok
+
+----------------------------------------------------------------------
+Ran 46 tests in 0.025s
+
+OK

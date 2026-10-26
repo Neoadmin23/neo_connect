@@ -1,0 +1,250 @@
+{
+  "doctype": "DocType",
+  "name": "Magento API Activity",
+  "module": "Neo Connect",
+  "engine": "InnoDB",
+  "autoname": "hash",
+  "allow_rename": 0,
+  "fields": [
+    {
+      "fieldname": "integration",
+      "label": "Integration",
+      "fieldtype": "Link",
+      "options": "Magento Integration Settings",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "company",
+      "label": "Company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "in_standard_filter": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "api_user",
+      "label": "API User",
+      "fieldtype": "Link",
+      "options": "User",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "actor",
+      "label": "Actor",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1
+    },
+    {
+      "fieldname": "target_user",
+      "label": "Target User",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1
+    },
+    {
+      "fieldname": "partner",
+      "label": "API Partner",
+      "fieldtype": "Link",
+      "options": "API Partner",
+      "read_only": 1
+    },
+    {
+      "fieldname": "endpoint",
+      "label": "Endpoint",
+      "fieldtype": "Link",
+      "options": "API Endpoint",
+      "in_standard_filter": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "action",
+      "label": "Action",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Success\nDenied\nFailed\nDuplicate\nDry Run",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "http_status",
+      "label": "HTTP Status",
+      "fieldtype": "Int",
+      "in_standard_filter": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "http_method",
+      "label": "HTTP Method",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "route",
+      "label": "API Route",
+      "fieldtype": "Small Text",
+      "read_only": 1
+    },
+    {
+      "fieldname": "query_string",
+      "label": "Query String",
+      "fieldtype": "Small Text",
+      "read_only": 1
+    },
+    {
+      "fieldname": "request_ip",
+      "label": "Request IP",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "duration_ms",
+      "label": "Duration (ms)",
+      "fieldtype": "Float",
+      "read_only": 1
+    },
+    {
+      "fieldname": "correlation_id",
+      "label": "Trace ID",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "in_standard_filter": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "request_log",
+      "label": "API Request Log",
+      "fieldtype": "Link",
+      "options": "API Request Log",
+      "read_only": 1
+    },
+    {
+      "fieldname": "external_order_id",
+      "label": "Magento Order Number",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "in_standard_filter": 1,
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "reference_doctype",
+      "label": "Document Type",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "read_only": 1
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "Document",
+      "fieldtype": "Dynamic Link",
+      "options": "reference_doctype",
+      "read_only": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "docstatus",
+      "label": "Document Status",
+      "fieldtype": "Int",
+      "read_only": 1
+    },
+    {
+      "fieldname": "source_hash",
+      "label": "Request SHA256",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "payload_truncated",
+      "label": "Payload Truncated",
+      "fieldtype": "Check",
+      "read_only": 1
+    },
+    {
+      "fieldname": "request_payload",
+      "label": "Request Payload",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "read_only": 1
+    },
+    {
+      "fieldname": "response_payload",
+      "label": "Response Payload",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "read_only": 1
+    },
+    {
+      "fieldname": "error_trace",
+      "label": "Error / Traceback",
+      "fieldtype": "Long Text",
+      "read_only": 1
+    },
+    {
+      "fieldname": "details",
+      "label": "Activity Details",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "read_only": 1
+    }
+  ],
+  "field_order": [
+    "integration",
+    "company",
+    "api_user",
+    "actor",
+    "target_user",
+    "partner",
+    "endpoint",
+    "action",
+    "status",
+    "http_status",
+    "http_method",
+    "route",
+    "query_string",
+    "request_ip",
+    "duration_ms",
+    "correlation_id",
+    "request_log",
+    "external_order_id",
+    "reference_doctype",
+    "reference_name",
+    "docstatus",
+    "source_hash",
+    "payload_truncated",
+    "request_payload",
+    "response_payload",
+    "error_trace",
+    "details"
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1
+    }
+  ],
+  "track_changes": 1,
+  "sort_field": "creation",
+  "sort_order": "DESC",
+  "search_fields": "api_user,external_order_id,reference_name,correlation_id"
+}

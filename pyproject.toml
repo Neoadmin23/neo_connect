@@ -1,6 +1,6 @@
 [project]
 name = "neo_connect"
-authors = [{ name = "Your Company", email = "it@yourcompany.com" }]
+authors = [{ name = "AlphaX SAAS" }]
 description = "NeoConnect: configurable inbound/outbound API gateway connecting e-commerce platforms and partners to ERPNext"
 requires-python = ">=3.10"
 readme = "README.md"

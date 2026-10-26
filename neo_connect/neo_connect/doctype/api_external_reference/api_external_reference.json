@@ -8,12 +8,21 @@
   "partner",
   "endpoint",
   "external_id",
+  "payload_hash",
+  "reservation_token",
   "cb_1",
   "reference_doctype",
   "reference_name",
-  "last_log"
+  "last_log",
+  "magento_integration"
  ],
  "fields": [
+  {
+   "fieldname": "payload_hash",
+   "fieldtype": "Data",
+   "label": "Payload SHA256",
+   "read_only": 1
+  },
   {
    "fieldname": "partner",
    "fieldtype": "Link",
@@ -69,6 +78,20 @@
    "fieldtype": "Link",
    "label": "Last Request",
    "options": "API Request Log",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reservation_token",
+   "fieldtype": "Data",
+   "label": "Reservation Token",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "magento_integration",
+   "label": "Magento Integration",
+   "fieldtype": "Link",
+   "options": "Magento Integration Settings",
    "read_only": 1
   }
  ],

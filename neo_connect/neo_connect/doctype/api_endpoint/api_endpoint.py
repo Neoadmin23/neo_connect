@@ -31,7 +31,7 @@ class APIEndpoint(Document):
                              ("Base Filters", self.base_filters), ("Sample Payload", self.sample_payload)):
             parse_json_field(value, None, _(label))
 
-        for path in get_hooks(self.pre_process_hook) + get_hooks(self.post_process_hook) + (
+        for path in get_hooks(self.pre_process_hook) + get_hooks(self.pre_submit_hook) + get_hooks(self.post_process_hook) + (
                 [self.server_method] if self.direction == "Outbound" and self.outbound_source == "Server Method" else []):
             try:
                 frappe.get_attr(path)

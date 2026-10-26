@@ -58,6 +58,8 @@ def generate_credentials(partner):
     """Create/refresh the API user and a new key+secret. The secret is only returned once."""
     frappe.only_for("System Manager")
     doc = frappe.get_doc("API Partner", partner)
+    if doc.magento_integration:
+        frappe.throw("Manage these credentials from Magento Integration Settings")
     user = doc.ensure_user()
     api_secret = frappe.generate_hash(length=32)
     if not user.api_key:
@@ -84,6 +86,8 @@ def generate_credentials(partner):
 def revoke_credentials(partner):
     frappe.only_for("System Manager")
     doc = frappe.get_doc("API Partner", partner)
+    if doc.magento_integration:
+        frappe.throw("Revoke these credentials from Magento Integration Settings")
     if doc.user:
         user = frappe.get_doc("User", doc.user)
         user.api_secret = frappe.generate_hash(length=32)  # old secret stops working

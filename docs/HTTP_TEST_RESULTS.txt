@@ -1,0 +1,28 @@
+test_01_token_ping (__main__.InvoiceHTTPTests.test_01_token_ping) ... ok
+test_02_anonymous_denied (__main__.InvoiceHTTPTests.test_02_anonymous_denied) ... ok
+test_03_create_draft_no_ledger (__main__.InvoiceHTTPTests.test_03_create_draft_no_ledger) ... ok
+test_04_create_and_submit_balanced_ledger (__main__.InvoiceHTTPTests.test_04_create_and_submit_balanced_ledger) ... ok
+test_05_submit_existing_and_retry (__main__.InvoiceHTTPTests.test_05_submit_existing_and_retry) ... ok
+test_06_push_upgrades_same_draft (__main__.InvoiceHTTPTests.test_06_push_upgrades_same_draft) ... ok
+test_07_create_submit_dry_run_no_documents (__main__.InvoiceHTTPTests.test_07_create_submit_dry_run_no_documents) ... ok
+test_08_existing_submit_dry_run_no_posting (__main__.InvoiceHTTPTests.test_08_existing_submit_dry_run_no_posting) ... ok
+test_09_duplicate_after_submission (__main__.InvoiceHTTPTests.test_09_duplicate_after_submission) ... ok
+test_10_changed_retry_rejected (__main__.InvoiceHTTPTests.test_10_changed_retry_rejected) ... ok
+test_11_erp_tax_mismatch_rolls_back_masters (__main__.InvoiceHTTPTests.test_11_erp_tax_mismatch_rolls_back_masters) ... ok
+test_12_unknown_sku_rejected (__main__.InvoiceHTTPTests.test_12_unknown_sku_rejected) ... ok
+test_13_partial_invoice_rejected (__main__.InvoiceHTTPTests.test_13_partial_invoice_rejected) ... ok
+test_14_no_submit_permission (__main__.InvoiceHTTPTests.test_14_no_submit_permission) ... ok
+test_15_endpoint_opt_in_required (__main__.InvoiceHTTPTests.test_15_endpoint_opt_in_required) ... ok
+test_16_other_partner_cannot_submit_order (__main__.InvoiceHTTPTests.test_16_other_partner_cannot_submit_order) ... ok
+test_17_arbitrary_document_names_rejected (__main__.InvoiceHTTPTests.test_17_arbitrary_document_names_rejected) ... ok
+test_18_tampered_draft_cannot_submit (__main__.InvoiceHTTPTests.test_18_tampered_draft_cannot_submit) ... ok
+test_19_cancelled_invoice_not_recreated (__main__.InvoiceHTTPTests.test_19_cancelled_invoice_not_recreated) ... ok
+test_20_shipping_and_cod (__main__.InvoiceHTTPTests.test_20_shipping_and_cod) ... ok
+test_21_concurrent_retries_create_one_invoice (__main__.InvoiceHTTPTests.test_21_concurrent_retries_create_one_invoice) ... ok
+test_22_native_auto_submit_configuration (__main__.InvoiceHTTPTests.test_22_native_auto_submit_configuration) ... ok
+test_23_concurrent_submit_existing_draft (__main__.InvoiceHTTPTests.test_23_concurrent_submit_existing_draft) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 4.114s
+
+OK

@@ -1,0 +1,4 @@
+Actual Newman run against isolated ERPNext/MariaDB site.
+Collection: Postman v2.1; no credentials included in handoff.
+requests: 12 total, 0 failed
+assertions: 34 total, 0 failed

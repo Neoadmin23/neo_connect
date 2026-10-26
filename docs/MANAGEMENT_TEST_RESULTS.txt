@@ -1,0 +1,30 @@
+test_01_ping_trace (__main__.ManagementTests.test_01_ping_trace) ... ok
+test_02_draft_and_atomic_audit (__main__.ManagementTests.test_02_draft_and_atomic_audit) ... ok
+test_03_submit_and_cross_user_retry (__main__.ManagementTests.test_03_submit_and_cross_user_retry) ... ok
+test_04_submit_existing (__main__.ManagementTests.test_04_submit_existing) ... ok
+test_05_submit_permission_denied (__main__.ManagementTests.test_05_submit_permission_denied) ... ok
+test_06_draft_user_can_create (__main__.ManagementTests.test_06_draft_user_can_create) ... ok
+test_07_native_rest_bypass_denied (__main__.ManagementTests.test_07_native_rest_bypass_denied) ... ok
+test_08_rpc_override_denied (__main__.ManagementTests.test_08_rpc_override_denied) ... ok
+test_09_other_endpoint_denied (__main__.ManagementTests.test_09_other_endpoint_denied) ... ok
+test_10_non_manager_cannot_reveal (__main__.ManagementTests.test_10_non_manager_cannot_reveal) ... ok
+test_11_configuration_disable (__main__.ManagementTests.test_11_configuration_disable) ... ok
+test_12_global_submit_disabled (__main__.ManagementTests.test_12_global_submit_disabled) ... ok
+test_13_get_and_rotate_secret (__main__.ManagementTests.test_13_get_and_rotate_secret) ... ok
+test_14_add_remove_user_retains_history (__main__.ManagementTests.test_14_add_remove_user_retains_history) ... ok
+test_15_report_filters (__main__.ManagementTests.test_15_report_filters) ... ok
+test_16_audit_immutable_and_secrets_redacted (__main__.ManagementTests.test_16_audit_immutable_and_secrets_redacted) ... ok
+test_17_navigation_metadata (__main__.ManagementTests.test_17_navigation_metadata) ... ok
+test_18_revoke_access (__main__.ManagementTests.test_18_revoke_access) ... ok
+test_19_ip_allowlist (__main__.ManagementTests.test_19_ip_allowlist) ... ok
+test_20_rate_limit (__main__.ManagementTests.test_20_rate_limit) ... ok
+test_21_hmac (__main__.ManagementTests.test_21_hmac) ... ok
+test_22_failure_trace_and_redaction (__main__.ManagementTests.test_22_failure_trace_and_redaction) ... ok
+test_23_legacy_reference_adoption (__main__.ManagementTests.test_23_legacy_reference_adoption) ... ok
+test_24_concurrent_users_share_order (__main__.ManagementTests.test_24_concurrent_users_share_order) ... ok
+test_25_creation_permission (__main__.ManagementTests.test_25_creation_permission) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 5.475s
+
+OK

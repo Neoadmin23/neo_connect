@@ -39,6 +39,8 @@ def push(**kwargs):
     slug = args.get("endpoint")
     dry_run = cint(args.get("dry_run"))
     raw = frappe.request.get_data() or b""
+    if len(raw) > 2_000_000:
+        return _respond({"request_id": None, "status": "Rejected", "error": "Request body exceeds 2000000 bytes"}, 413)
     raw_text = raw.decode("utf-8", errors="replace")
 
     log = inbound.new_log("Inbound", payload_text=raw_text, query=frappe.request.query_string.decode())
@@ -47,6 +49,12 @@ def push(**kwargs):
     try:
         endpoint, partner = gate(slug, "Inbound", raw)
         log.endpoint, log.partner = endpoint.name, partner.name
+        requested = args.get("submit", "0")
+        if requested not in ("0", "1"):
+            raise GatewayError("submit query parameter must be 0 or 1", 400)
+        submit_requested = requested == "1"
+        if submit_requested and cint(endpoint.process_async):
+            raise GatewayError("Partner-requested submission requires a synchronous endpoint", 400)
         try:
             payload = json.loads(raw_text) if raw_text.strip() else None
         except ValueError as e:
@@ -67,7 +75,7 @@ def push(**kwargs):
             return _respond({"request_id": request_id, "status": "Queued",
                              "message": _("Accepted for background processing")}, 202)
 
-        result = inbound.Processor(endpoint, partner, log.name).process_payload(payload, dry_run=dry_run)
+        result = inbound.Processor(endpoint, partner, log.name).process_payload(payload, dry_run=dry_run, submit=submit_requested)
         inbound.finish_log(log, result, started)
         frappe.db.commit()
         body = {"request_id": request_id, "dry_run": bool(dry_run),
@@ -184,9 +192,59 @@ def _fail(log, started, status, http_status, message, trace=None):
             "error": (message or "") + ("\n\n" + trace if trace else ""),
         })
         log_doc.insert(ignore_permissions=True)
+        from neo_connect.audit import from_log
+        from_log(log_doc)
         frappe.db.commit()
         request_id = log_doc.name
     except Exception:  # noqa: BLE001 - never let logging hide the real error
         frappe.db.rollback()
         request_id = None
     return _respond({"request_id": request_id, "status": status, "error": message}, http_status)
+
+
+@frappe.whitelist(methods=['POST'])
+def submit(**kwargs):
+    """Submit an existing imported invoice using its external order identity."""
+    from neo_connect.engine.submission import submit_imported
+    from neo_connect.engine.mapper import MappingError
+    started = time.time()
+    args = _query_args()
+    raw = frappe.request.get_data() or b''
+    if len(raw) > 2_000_000:
+        return _respond({'status': 'Rejected', 'error': 'Request body exceeds 2000000 bytes'}, 413)
+    raw_text = raw.decode('utf-8', errors='strict')
+    log = inbound.new_log('Inbound', payload_text=raw_text, query=frappe.request.query_string.decode())
+    try:
+        endpoint, partner = gate(args.get('endpoint'), 'Inbound', raw)
+        log.endpoint, log.partner = endpoint.name, partner.name
+        if args.get('dry_run', '0') not in ('0', '1'):
+            raise GatewayError('dry_run query parameter must be 0 or 1', 400)
+        dry_run = args.get('dry_run') == '1'
+        log.dry_run = dry_run
+        try:
+            request = json.loads(raw_text)
+        except ValueError:
+            raise GatewayError('Body is not valid JSON', 400) from None
+        result = submit_imported(endpoint, partner, request, log.name, dry_run=dry_run)
+        if dry_run:
+            # Includes log writes in the rollback; persist the final dry-run log again.
+            frappe.db.rollback()
+            log = inbound.new_log('Inbound', endpoint.name, partner.name, payload_text=raw_text,
+                                  query=frappe.request.query_string.decode())
+            log.dry_run = 1
+        inbound.finish_log(log, result, started)
+        frappe.db.commit()
+        return _respond({'request_id': log.name, 'dry_run': dry_run,
+                         **{k: v for k, v in result.items() if not k.startswith('_') and k != 'http_status'}}, result['http_status'])
+    except GatewayError as error:
+        frappe.db.rollback()
+        return _fail(log, started, error.status, error.http_status, error.message)
+    except frappe.PermissionError:
+        frappe.db.rollback()
+        return _fail(log, started, 'Rejected', 403, 'The API user does not have permission to submit this invoice')
+    except (MappingError, frappe.ValidationError) as error:
+        frappe.db.rollback()
+        return _fail(log, started, 'Rejected', 422, inbound.clean_error(error))
+    except Exception:
+        frappe.db.rollback()
+        return _fail(log, started, 'Failed', 500, 'Internal error', frappe.get_traceback())

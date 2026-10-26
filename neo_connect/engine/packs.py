@@ -59,7 +59,7 @@ def load_bundled(fn):
 
 _EP_KEYS = ("endpoint_title", "slug", "direction", "reference_doctype", "description", "records_path",
             "external_id_path", "on_duplicate", "max_records_per_request", "document_action", "process_async",
-            "ignore_permissions", "row_filters", "pre_process_hook", "post_process_hook", "outbound_source",
+            "ignore_permissions", "allow_submit", "row_filters", "pre_process_hook", "pre_submit_hook", "post_process_hook", "outbound_source",
             "server_method", "base_filters", "allowed_filters", "order_by", "default_page_length", "max_page_length")
 _MAP_KEYS = ("external_path", "erp_field", "transform", "required", "default_value", "lookup_doctype", "lookup_field",
              "lookup_endpoint", "if_not_found", "add_missing_option", "source_timezone", "value_map", "expression", "notes")
@@ -220,7 +220,10 @@ def install_pack(pack, partner, mop_account=None, slug=None):
         log.append(f"CREATED endpoint {e['slug']}")
     for k in _EP_KEYS:
         if k in e and k != "slug" and e[k] is not None:
-            ep.set(k, e[k])
+            value = e[k]
+            if k in ("row_filters", "base_filters") and isinstance(value, (dict, list)):
+                value = dumps(value)
+            ep.set(k, value)
     ep.enabled = 1
     ep.defaults = dumps(defaults)
     ep.handler_settings = dumps(e.get("handler_settings") or {})

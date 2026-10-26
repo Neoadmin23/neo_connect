@@ -1,0 +1,85 @@
+{
+  "order_number": "PT-289335",
+  "order_date": "2026-09-15T10:30:00Z",
+  "status": "processing",
+  "custom_order_status": "Awaiting Installer",
+  "erp_executive_code": "EXC-001",
+  "customer": {
+    "email": "ahmed@example.com",
+    "firstname": "Ahmed Al-Rashidi",
+    "is_guest": false
+  },
+  "billing_address": {
+    "firstname": "Ahmed Al-Rashidi",
+    "street": "King Fahad Road, Building 5",
+    "city": "Riyadh",
+    "postcode": "12271",
+    "country_id": "SA",
+    "telephone": "+966501234567"
+  },
+  "vehicle": {
+    "make": "Toyota",
+    "model": "Camry",
+    "year": "2022",
+    "plate": "ABC 1234",
+    "vin_number": "1HGBH41JXMN109186"
+  },
+  "fulfillment": {
+    "method": "Store Pickup",
+    "pickup_date": "2026-09-20T00:00:00Z",
+    "pickup_time": "10:00 AM - 12:00 PM"
+  },
+  "installer": {
+    "name": "PowerTire Riyadh North",
+    "name_ar": "باور تاير شمال الرياض",
+    "address": "King Fahad Road, Building 5",
+    "address_ar": "طريق الملك فهد، مبنى 5",
+    "city": "Riyadh",
+    "city_ar": "الرياض",
+    "country": "SA",
+    "phone": "+966114567890",
+    "email": "riyadhnorth@powertire.sa",
+    "latitude": "24.7136",
+    "longitude": "46.6753",
+    "installer_type": "branch",
+    "is_mobilevan": false
+  },
+  "items": [
+    {
+      "sku": "TYR-MICH-2254517-XL",
+      "name": "Michelin Pilot Sport 4 225/45R17 XL",
+      "qty_ordered": 4,
+      "qty_invoiced": 4,
+      "price": 450.0,
+      "price_incl_tax": 517.5,
+      "row_total": 1800.0,
+      "row_total_incl_tax": 2070.0,
+      "tax_amount": 270.0,
+      "discount_amount": 0.0,
+      "brand": "Michelin",
+      "width": "225",
+      "height": "45",
+      "rim": "17",
+      "speed_index": "W",
+      "supplier_item_code": "MC-PS4-225"
+    }
+  ],
+  "totals": {
+    "subtotal": 1800.0,
+    "shipping_amount": 0.0,
+    "shipping_tax_amount": 0.0,
+    "discount_amount": 0.0,
+    "tax_amount": 270.0,
+    "grand_total": 2070.0
+  },
+  "payment": {
+    "method": "tap",
+    "method_title": "TAP Payment",
+    "amount_paid": 2070.0,
+    "transaction_id": "ch_3abc123xyz"
+  },
+  "event": "invoice.created",
+  "invoice_number": "PT-INV-289335",
+  "invoice_date": "2026-09-16T10:30:00Z",
+  "order_currency_code": "SAR"
+}

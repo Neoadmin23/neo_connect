@@ -15,6 +15,7 @@ class GatewayError(Exception):
         super().__init__(message)
         self.message = message
         self.http_status = http_status
+        self.http_status_code = http_status
         self.status = status
 
 
@@ -110,6 +111,8 @@ def gate(slug, direction, raw_body=None):
     endpoint = get_endpoint(slug, direction)
     partner = get_partner_for_session()
     authorize(endpoint, partner)
+    from neo_connect.access import enforce_endpoint
+    enforce_endpoint(endpoint, partner)
     check_ip(partner)
     check_rate_limit(partner)
     if direction == "Inbound":

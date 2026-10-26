@@ -1,0 +1,137 @@
+{
+  "doctype": "DocType",
+  "name": "Magento Integration Settings",
+  "module": "Neo Connect",
+  "engine": "InnoDB",
+  "autoname": "field:integration_name",
+  "allow_rename": 0,
+  "fields": [
+    {
+      "fieldname": "integration_name",
+      "label": "Integration Name",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "unique": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "enabled",
+      "label": "Enabled",
+      "fieldtype": "Check",
+      "default": "0",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "company",
+      "label": "Company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "endpoint",
+      "label": "Sales Invoice Endpoint",
+      "fieldtype": "Link",
+      "options": "API Endpoint",
+      "reqd": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "allow_submit",
+      "label": "Allow Invoice Submission",
+      "fieldtype": "Check",
+      "default": "1"
+    },
+    {
+      "fieldname": "allowed_ips",
+      "label": "Allowed IPs / CIDR",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "rate_limit_per_minute",
+      "label": "Requests per Minute",
+      "fieldtype": "Int",
+      "default": "120"
+    },
+    {
+      "fieldname": "require_signature",
+      "label": "Require HMAC Signature",
+      "fieldtype": "Check",
+      "default": "0"
+    },
+    {
+      "fieldname": "users_section",
+      "label": "API Users",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "users",
+      "label": "API Users",
+      "fieldtype": "Table",
+      "options": "Magento API User"
+    },
+    {
+      "fieldname": "trace_section",
+      "label": "Traceability",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "notes",
+      "label": "Notes",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "push_url",
+      "label": "Create Invoice URL",
+      "fieldtype": "Small Text",
+      "read_only": 1
+    },
+    {
+      "fieldname": "submit_url",
+      "label": "Submit Invoice URL",
+      "fieldtype": "Small Text",
+      "read_only": 1
+    }
+  ],
+  "field_order": [
+    "integration_name",
+    "enabled",
+    "company",
+    "endpoint",
+    "allow_submit",
+    "allowed_ips",
+    "rate_limit_per_minute",
+    "require_signature",
+    "users_section",
+    "users",
+    "trace_section",
+    "notes",
+    "push_url",
+    "submit_url"
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "System Manager",
+      "permlevel": 1,
+      "read": 1,
+      "write": 1
+    }
+  ],
+  "track_changes": 1,
+  "title_field": "integration_name"
+}
