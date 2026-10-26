@@ -1,33 +1,22 @@
-name: Sync from AlphaX source
-
-on:
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-concurrency:
-  group: sync-source
-  cancel-in-progress: false
-
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout destination
-        uses: actions/checkout@v6
-        with:
-          ref: main
-          fetch-depth: 0
-          token: ${{ secrets.SYNC_TOKEN }}
-
-      - name: Merge source updates
+      - name: Sync source files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git remote add source https://github.com/AlphaX-SAAS/neo_connect.git
           git fetch source main
-          git merge source/main --no-edit --allow-unrelated-histories
-          git push origin HEAD:main
+
+          # Save the destination before changing it
+          backup="backup-before-sync-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git push origin "HEAD:refs/heads/$backup"
+
+          # Copy the source files while keeping this sync workflow
+          git restore --source=source/main --staged --worktree -- \
+            . ':(exclude).github/workflows/main.yml'
+
+          if git diff --cached --quiet; then
+            echo "Destination files are already up to date."
+          else
+            git commit -m "Sync files from AlphaX-SAAS/neo_connect"
+            git push origin HEAD:main
+          fi
