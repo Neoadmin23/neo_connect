@@ -1,5 +1,7 @@
 # PowerTire submission verification and deployment
 
+**30 October 2026 update:** See [sandbox acceptance and live changes](SANDBOX_ACCEPTANCE_2026-10-30.md) and [v1.3.0 verification](RELEASE_v1.3.0.md). Earlier results below remain historical; they do not include the new dashboard.
+
 Updated 24 October 2026, version 1.2.0. Central management is covered in [MAGENTO_CONFIGURATION.md](MAGENTO_CONFIGURATION.md): 25 additional real HTTP/database tests and the 12-request / 34-assertion Newman run passed. The client confirmed one Sales Invoice for each complete Magento order. Native invoice submission is implemented and tested locally; the customer site has not been changed.
 
 ## Verified behavior

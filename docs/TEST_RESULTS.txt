@@ -128,3 +128,17 @@ Actual Newman run against isolated ERPNext/MariaDB site.
 Collection: Postman v2.1; no credentials included in handoff.
 requests: 12 total, 0 failed
 assertions: 34 total, 0 failed
+
+
+2026-10-30 / v1.3.0 dashboard and sandbox acceptance
+52 unit/mock tests: PASS
+12 dashboard HTTP integration cases on isolated ERPNext: PASS (final rerun)
+Generated HMAC Postman collection: 2 requests / 4 assertions / 0 failures
+Python compilation, JavaScript syntax, git diff whitespace: PASS
+Browser: client page, setup controls, status filtering, 25-row pagination,
+collection and private environment downloads parsed from disk: PASS
+Sandbox core Postman: 13 requests / 33 assertions / 0 failures
+Sandbox extended security: 23 distinct checks; 21 full status/trace passes.
+Two rate-limit rejections: HTTP 429 and persisted audit PASS; external JSON/trace
+headers replaced by hosting HTML response (deployment limitation).
+See SANDBOX_ACCEPTANCE_2026-10-30.md for detailed boundaries and site changes.

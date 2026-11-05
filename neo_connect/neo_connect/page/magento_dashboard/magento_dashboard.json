@@ -1,0 +1,17 @@
+{
+  "doctype": "Page",
+  "name": "magento-dashboard",
+  "page_name": "magento-dashboard",
+  "title": "Magento Integration",
+  "module": "Neo Connect",
+  "standard": "Yes",
+  "system_page": 0,
+  "roles": [
+    {
+      "role": "System Manager"
+    },
+    {
+      "role": "Accounts Manager"
+    }
+  ]
+}

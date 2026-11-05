@@ -1,5 +1,7 @@
 # Central Magento integration configuration
 
+For the unified setup and monitoring UI in v1.3.0, start with the [Client Dashboard guide](MAGENTO_DASHBOARD.md). Existing configuration forms and APIs remain available.
+
 Version 1.2.0, 24 October 2026. Verified on the isolated Frappe 15.118.0 / ERPNext 15.119.3 test site. The PowerTire customer site has not been deployed or tested.
 
 ## Open the integration

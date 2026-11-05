@@ -1,10 +1,12 @@
 # NeoConnect for ERPNext
 
-**Current version:** 1.2.0
+**Current version:** 1.3.0
 
 Repository: [AlphaX-SAAS/neo_connect](https://github.com/AlphaX-SAAS/neo_connect)
 
 ## Features
+
+- A single [Magento client dashboard](docs/MAGENTO_DASHBOARD.md) for setup, user access, private Postman downloads, charts and filtered trace tables.
 
 - Complete-order Magento invoices: draft, create-and-submit, or submit an imported draft by order number.
 - Central configuration for dedicated API users, create/submit access, key/secret lifecycle, IP rules, rate limits and HMAC.
@@ -17,16 +19,18 @@ Repository: [AlphaX-SAAS/neo_connect](https://github.com/AlphaX-SAAS/neo_connect
 | Read this | Purpose |
 | --- | --- |
 | [Introduction and architecture](docs/introduction.md) | Component/DocType diagrams, feature workflows and edge cases |
+| [Client dashboard](docs/MAGENTO_DASHBOARD.md) | Onboarding, security, credential delivery and monitoring |
+| [Sandbox acceptance](docs/SANDBOX_ACCEPTANCE_2026-10-30.md) | Live changes, security results, admin expectations and hosting limitations |
 | [Magento configuration](docs/MAGENTO_CONFIGURATION.md) | User access, credentials, traceability and Postman setup |
 | [Invoice API contract](docs/POWERTIRE_API.md) | Payload, authentication, create/submit behavior and errors |
 | [Development guide](docs/DEVELOPMENT.md) | Repository structure, extension points, invariants and tests |
 | [Contributing](CONTRIBUTING.md) | Required development and release workflow |
-| [Changelog](CHANGELOG.md) / [Release notes](docs/RELEASE_v1.2.0.md) | Version history, upgrade steps and compatibility |
+| [Changelog](CHANGELOG.md) / [Release notes](docs/RELEASE_v1.3.0.md) | Version history, upgrade steps and compatibility |
 | [Verification](docs/VERIFICATION.md) / [Results](docs/TEST_RESULTS.txt) | Actual test coverage and remaining acceptance work |
 | [Postman collection](docs/powertire.postman_collection.json) / [Environment](docs/powertire.postman_environment.json) | Runnable staging API acceptance suite |
 
 
-**PowerTire 1.2.0:** Central configuration, dedicated user access, encrypted credential management, immutable activity history, filtered reporting and a tested Postman collection are available. Start with [Magento configuration](docs/MAGENTO_CONFIGURATION.md), the [API handoff](docs/POWERTIRE_API.md), and [verification and deployment](docs/VERIFICATION.md). The customer site has not been changed. The original sample documentation below describes inherited behavior outside this verified flow.
+**Version 1.3.0:** The client dashboard is implemented and verified locally. The PowerTire sandbox on 1.2.0 passed core invoice acceptance and extended security checks, with a hosting-proxy exception for 429 response bodies/headers. Production was not changed. Read the [live change register and results](docs/SANDBOX_ACCEPTANCE_2026-10-30.md) and [upgrade notes](docs/RELEASE_v1.3.0.md). The original sample documentation below describes inherited behavior outside this complete-order flow.
 
 **NeoConnect – Commerce & Partner Integrations.** NeoConnect is a configurable API gateway for ERPNext. The PowerTire flow is verified on Frappe 15.118.0 / ERPNext 15.119.3; v16 has not been tested. Each e-commerce platform, marketplace or vendor becomes an **API Partner** with its own credentials. You create **API Endpoints** in ERPNext and send the partner the generated URL.
 
@@ -56,7 +60,7 @@ The partner's JSON is converted to ERPNext fields by **field mapping** that you 
 
 ## Quick start: PowerTire Magento
 
-Install/update the app and migrate the site. Install the bundled `powertire_complete_order_invoice.json` pack, review its company/account/item defaults, then create **Magento Integration Settings** and add dedicated API users there. Use the central configuration buttons to issue credentials and inspect activity. Follow the complete [setup and Postman guide](docs/MAGENTO_CONFIGURATION.md) before customer staging acceptance.
+Install/update the app and migrate the site. Open **Magento Integration → Client Dashboard**, choose **Set up new client**, supply the client company, cost center, tax template and required custom defaults, then add a dedicated API user. Review setup checks, enable access and download the Postman collection/environment. Follow the [dashboard guide](docs/MAGENTO_DASHBOARD.md) and validate on staging before production traffic.
 
 **Other vendors:** load their JSON or spec on an **API Payload Sample** and use **Review & Confirm** (below). Once a vendor works, click **Export Integration Pack** on its endpoint to reuse the setup on another site or for a similar vendor.
 

@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\": \"title\", \"type\": \"header\", \"data\": {\"text\": \"<b>Magento Integration</b>\", \"col\": 12}}, {\"id\": \"shortcut0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Configurations\", \"col\": 4}}, {\"id\": \"shortcut1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Activity Report\", \"col\": 4}}, {\"id\": \"shortcut2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Trace Logs\", \"col\": 4}}]",
+ "content": "[{\"id\": \"title\", \"type\": \"header\", \"data\": {\"text\": \"<b>Magento Integration</b>\", \"col\": 12}}, {\"id\": \"dashboard\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Client Dashboard\", \"col\": 12}}, {\"id\": \"shortcut0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Configurations\", \"col\": 4}}, {\"id\": \"shortcut1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Activity Report\", \"col\": 4}}, {\"id\": \"shortcut2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Trace Logs\", \"col\": 4}}]",
  "creation": "2026-10-24 11:34:54.895786",
  "custom_blocks": [],
  "docstatus": 0,
@@ -11,7 +11,7 @@
  "is_hidden": 0,
  "label": "Magento Integration",
  "links": [],
- "modified": "2026-10-24 11:34:54.895786",
+ "modified": "2026-10-30 09:45:00.000000",
  "modified_by": "Administrator",
  "module": "Neo Connect",
  "name": "Magento Integration",
@@ -29,6 +29,12 @@
  ],
  "sequence_id": 0.0,
  "shortcuts": [
+  {
+   "label": "Client Dashboard",
+   "link_to": "magento-dashboard",
+   "type": "Page",
+   "color": "Blue"
+  },
   {
    "color": "Blue",
    "doc_view": "List",

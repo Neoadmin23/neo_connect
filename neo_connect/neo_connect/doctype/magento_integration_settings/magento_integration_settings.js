@@ -2,6 +2,7 @@ frappe.ui.form.on('Magento Integration Settings', {
     refresh(frm) {
         frm.fields_dict.users.grid.cannot_add_rows = true;
         if (frm.is_new()) return;
+        frm.add_custom_button(__('Client Dashboard'), () => frappe.set_route('magento-dashboard', {integration:frm.doc.name}));
         frm.add_custom_button(__('Activity Report'), () => frappe.set_route('query-report','Magento API Activity Report',{integration:frm.doc.name}));
         frm.add_custom_button(__('Trace Logs'), () => frappe.set_route('List','Magento API Activity',{integration:frm.doc.name}));
         if (!frappe.user.has_role('System Manager')) return;

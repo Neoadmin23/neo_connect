@@ -8,6 +8,8 @@
 neo_connect/
   api.py                   Gateway request dispatch and response envelopes
   access.py                Managed-user route and capability policy
+  dashboard.py             Permission-checked client setup, metrics and exports
+  postman.py               Pure portable Postman document builder
   management.py            System Manager user and credential actions
   audit.py                 Correlation, redaction and activity persistence
   install.py               Idempotent dedicated roles, permissions and indexes
@@ -20,6 +22,7 @@ neo_connect/
     doctype/<name>/         Standard JSON schema, controller and form JavaScript
     report/<name>/          Script Report metadata, query and filters
     workspace/<name>/       Desk workspace metadata
+    page/<name>/            Standard Desk pages
   tests/                   Discoverable unit and mock regressions
   patches.txt              Ordered future data migrations
   change_log/v1/           Frappe release highlights
@@ -89,7 +92,7 @@ From the app directory, using the bench environment:
 find neo_connect -name '*.js' -exec node --check {} \;
 ```
 
-The shipped unit/mock suite has 46 cases. [TEST_RESULTS.txt](TEST_RESULTS.txt) records the separate isolated-site runs: 23 invoice and 25 management HTTP/database cases, plus 12 actual Newman requests and 34 assertions. These results do not imply browser-dialog or customer e-invoicing acceptance.
+The shipped unit/mock suite has 52 cases. The 1.3.0 [dashboard guide](MAGENTO_DASHBOARD.md) describes its server/UI boundaries, and [acceptance results](SANDBOX_ACCEPTANCE_2026-10-30.md) distinguish local dashboard tests from live sandbox tests. [TEST_RESULTS.txt](TEST_RESULTS.txt) records the separate isolated-site runs: 23 invoice and 25 management HTTP/database cases, plus 12 actual Newman requests and 34 assertions. These results do not imply browser-dialog or customer e-invoicing acceptance.
 
 For repeatable API acceptance on your own staging site, follow the three-user environment setup in [MAGENTO_CONFIGURATION.md](MAGENTO_CONFIGURATION.md), then run:
 
@@ -104,3 +107,7 @@ For accounting/security changes, additionally verify native GL balancing, rollba
 ## Releases
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md). `neo_connect/__init__.py` is the version source; `pyproject.toml` uses Flit's dynamic version and has no static version field. The supplied sample was 1.0.0; local features progressed through 1.1.0 and 1.2.0 before the initial repository publication. The initial tag publishes 1.2.0 without an extra docs-only bump. Future breaking changes require a major version, compatible features a minor version, and fixes a patch version. Documentation-only changes do not require a bump.
+
+## Dashboard extension rules
+
+Keep manager authorization in Python for every write/export action. Read-only roles must never receive credentials. Use permission-aware aggregation for charts and the same filters for totals and rows; do not silently count only a displayed page. Keep private exports out of fixtures/logs and revoke transient blob URLs when dialogs close. Do not overwrite an existing client endpoint during onboarding. Add custom business requirements in handlers/pack definitions, and document static readiness versus actual native invoice validation.

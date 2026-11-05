@@ -4,6 +4,30 @@
 
 Changes follow semantic versioning. Versions 1.1.0 and 1.2.0 were developed locally from the supplied 1.0.0 sample before the initial repository publication. The first published release is 1.2.0.
 
+## [1.3.0] - 2026-10-30
+
+Magento client setup and monitoring dashboard. [Upgrade notes](docs/RELEASE_v1.3.0.md).
+
+### Added
+
+- Standard Desk page with disabled-by-default client onboarding, master/custom-field validation and setup readiness checks.
+- User access controls and existing add/remove/rotate/revoke actions in one UI.
+- Downloadable Postman collection and blank/private environment, exact-body HMAC script, synthetic sample customer and audited no-store credential exports.
+- All-matching-row activity aggregates, outcome/daily/HTTP charts, top users and filtered paged trace/invoice tables.
+- Workspace/configuration navigation, dashboard architecture/developer guide, sandbox change register and admin checklist.
+- Six portable export regressions; twelve new isolated HTTP acceptance cases and generated HMAC Postman verification.
+
+### Changed
+
+- Dashboard-created endpoints populate invoice, item and generated tax-row cost centers using the existing handler, with automatic cost-center creation disabled.
+- README distinguishes the locally tested dashboard from the deployed sandbox and production.
+
+### Verification and limits
+
+- 52 unit/mock tests, 12 new dashboard HTTP cases and generated Postman validation (2 requests / 4 assertions) passed locally; browser JSON downloads verified.
+- Sandbox core suite: 13 requests / 33 assertions passed. Extended security controls exercised, with 21 full status/trace passes and two audited rate-limit rejections whose outgoing 429 response is rewritten by the hosting proxy.
+- Dashboard deployment to sandbox, proxy response preservation, client-specific shipping and external ZATCA acceptance remain separate follow-ups.
+
 ## [1.2.0] - 2026-10-24
 
 Central Magento administration and traceability. [Upgrade notes](docs/RELEASE_v1.2.0.md).

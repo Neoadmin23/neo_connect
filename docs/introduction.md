@@ -2,10 +2,11 @@
 
 [README](../README.md) | [Configuration](MAGENTO_CONFIGURATION.md) | [Development](DEVELOPMENT.md) | [Changelog](../CHANGELOG.md)
 
-NeoConnect is a Frappe custom app for controlled integration with ERPNext. Release 1.2.0 provides a verified Magento complete-order Sales Invoice flow, central access administration, encrypted credential management and correlated activity reporting. The source also contains generic mapping, sample-analysis and outbound capabilities inherited from the supplied 1.0.0 sample; those capabilities do not expand the verified PowerTire contract.
+NeoConnect is a Frappe custom app for controlled integration with ERPNext. Release 1.3.0 adds a unified client dashboard and downloadable credential bundles to the existing integration. Release 1.2.0 introduced a verified Magento complete-order Sales Invoice flow, central access administration, encrypted credential management and correlated activity reporting. The source also contains generic mapping, sample-analysis and outbound capabilities inherited from the supplied 1.0.0 sample; those capabilities do not expand the verified PowerTire contract.
 
 ## Contents
 
+- [Client setup and monitoring dashboard](#client-setup-and-monitoring-dashboard)
 - [Architecture overview](#architecture-overview)
 - [DocType model](#doctype-model)
 - [Central configuration and user access](#central-configuration-and-user-access)
@@ -14,6 +15,12 @@ NeoConnect is a Frappe custom app for controlled integration with ERPNext. Relea
 - [Traceability and reporting](#traceability-and-reporting)
 - [Extension points](#extension-points)
 - [Operational boundaries](#operational-boundaries)
+
+## Client setup and monitoring dashboard
+
+The [Magento client dashboard](MAGENTO_DASHBOARD.md) combines client onboarding, security/defaults, dedicated user access, private Postman delivery and advanced monitoring. System Managers administer; Accounts Managers read; managed API users are denied. The guide includes architecture/DocType diagrams, onboarding/export/monitoring flows, server methods and failure boundaries.
+
+New configurations start disabled and use a distinct endpoint. Business defaults must belong to the selected company. Readiness checks identify stale fetch references and missing mandatory custom fields; actual native invoice dry-run validation remains required. Exports use synthetic customer data and include credentials only on explicit private export. Charts count all matching rows while the trace table is paginated. See the [sandbox change register](SANDBOX_ACCEPTANCE_2026-10-30.md) and [1.3.0 upgrade notes](RELEASE_v1.3.0.md).
 
 ## Architecture overview
 
