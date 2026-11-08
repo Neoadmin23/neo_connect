@@ -1,4 +1,5 @@
 """Permission-checked Magento onboarding, delivery bundles and operational metrics."""
+from html import escape
 import ipaddress
 import json
 import re
@@ -67,8 +68,21 @@ def readiness_for(company,defaults,ep=None):
     add('Tax template',bool(tax and tax.company==company and not tax.disabled),'Confirm the template reconciles with Magento line and order totals.')
     meta=frappe.get_meta('Sales Invoice')
     mapped={m.erp_field for m in ep.field_maps} if ep else set()
-    missing=[df.fieldname for df in meta.fields if df.reqd and df.fieldname.startswith('custom_') and not df.default and not df.fetch_from and defaults.get(df.fieldname) in (None,'') and df.fieldname not in mapped]
-    add('Mandatory custom fields',not missing,', '.join(missing) or 'No unconfigured mandatory header custom fields found.')
+    missing=[df for df in meta.fields if df.reqd and df.fieldname.startswith('custom_') and not df.default and not df.fetch_from and defaults.get(df.fieldname) in (None,'') and df.fieldname not in mapped]
+    instructions=[]
+    for df in missing:
+        detail=f'{df.label or df.fieldname} ({df.fieldname})'
+        if df.fieldtype=='Link':
+            detail+=f': use the exact name of an existing {df.options} record'
+        elif df.fieldtype=='Select':
+            detail+=': choose one of '+', '.join(x for x in (df.options or '').splitlines() if x)
+        else:
+            detail+=': supply a value agreed with the client'
+        instructions.append(detail)
+    detail=('Set these required Sales Invoice fields in Client custom field defaults (JSON): '
+        + '; '.join(instructions)+'. Example structure: '+json.dumps({df.fieldname:'REPLACE_WITH_VALID_VALUE' for df in missing})
+        + '. Keep the fields mandatory; then retry Create disabled client.') if missing else 'No unconfigured mandatory header custom fields found.'
+    add('Mandatory custom fields',not missing,detail)
     stale=[]
     for df in meta.fields:
         if not df.fetch_from or '.' not in df.fetch_from:continue
@@ -112,7 +126,7 @@ def create_client(values):
     if frappe.db.exists('Magento Integration Settings',name) or frappe.db.exists('API Endpoint',slug):frappe.throw('Client or endpoint already exists; open its configuration instead')
     defaults=business_defaults(v.get('company'),v.get('cost_center'),v.get('tax_template'),v.get('custom_defaults'))
     checks=readiness_for(v['company'],defaults)
-    if any(c['status']=='Attention' for c in checks):frappe.throw('Resolve setup prerequisites first: '+ '; '.join(c['detail'] for c in checks if c['status']=='Attention'))
+    if any(c['status']=='Attention' for c in checks):frappe.throw(escape('Resolve setup prerequisites first: '+ '; '.join(c['detail'] for c in checks if c['status']=='Attention')))
     security=security_values(dict(v,enabled=0))
     from neo_connect.engine.packs import load_bundled,install_pack
     pack=load_bundled('powertire_complete_order_invoice.json')

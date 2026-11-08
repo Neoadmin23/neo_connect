@@ -119,7 +119,7 @@ class MagentoDashboard {
         return [
             {fieldname:'cost_center',fieldtype:'Link',options:'Cost Center',label:__('Cost center'),reqd:1,default:defaults.cost_center,get_query:()=>({filters:{company:typeof company==='function'?company():company,is_group:0,disabled:0}})},
             {fieldname:'tax_template',fieldtype:'Link',options:'Sales Taxes and Charges Template',label:__('Sales tax template'),reqd:1,default:defaults.taxes_and_charges,get_query:()=>({filters:{company:typeof company==='function'?company():company,disabled:0}})},
-            {fieldname:'custom_defaults',fieldtype:'Code',options:'JSON',label:__('Client custom field defaults'),default:JSON.stringify(Object.fromEntries(Object.entries(defaults).filter(([k])=>k.startsWith('custom_'))),null,2),description:__('JSON object of Sales Invoice custom fields, for example a required sales representative. Existing Select and Link values are validated.')}
+            {fieldname:'custom_defaults',fieldtype:'Code',options:'JSON',label:__('Client custom field defaults'),default:JSON.stringify(Object.fromEntries(Object.entries(defaults).filter(([k])=>k.startsWith('custom_'))),null,2),description:__('Required Sales Invoice custom fields must be supplied here, for example {"custom_sales_representative_name": "EXACT EXISTING VALUE"}. Use the exact existing record name for Link fields or an allowed Select option. Values are client-specific; do not copy sandbox defaults without confirmation.')}
         ];
     }
     setup() {
@@ -130,13 +130,17 @@ class MagentoDashboard {
             {fieldname:'endpoint',fieldtype:'Data',label:__('Unique endpoint slug'),reqd:1,description:__('Lowercase letters, digits and hyphens; for example client-magento-invoices.')},
             ...this.business_fields(()=>dialog.get_value('company')),
             ...this.security_fields().filter(f=>f.fieldname!=='enabled')],primary_action_label:__('Create disabled client'),primary_action:async values=>{
-                dialog.disable_primary_action();try{const r=await this.api('create_client',{values:JSON.stringify(values)});dialog.hide();await this.reload();await this.selector.set_value(r.name);frappe.msgprint(r.message);}finally{dialog.enable_primary_action();}
+                dialog.disable_primary_action();try{const r=await this.api('create_client',{values:JSON.stringify(values)});dialog.hide();await this.reload();await this.selector.set_value(r.name);frappe.msgprint(r.message);}catch(error){
+                    // frappe.call already displays the server validation message. Keep entered values for correction.
+                }finally{dialog.enable_primary_action();}
             }});dialog.show();
     }
     edit_client() {
         const c=this.current;
         const dialog=new frappe.ui.Dialog({title:__('Client setup & security'),size:'large',fields:[...this.business_fields(c.company,c.defaults),...this.security_fields(c.security)],primary_action_label:__('Save setup'),primary_action:async values=>{
-            dialog.disable_primary_action();try{await this.api('save_client',{config:c.name,values:JSON.stringify(values)});dialog.hide();await this.select_client();}finally{dialog.enable_primary_action();}
+            dialog.disable_primary_action();try{await this.api('save_client',{config:c.name,values:JSON.stringify(values)});dialog.hide();await this.select_client();}catch(error){
+                // frappe.call displays validation failures; the dialog remains available for correction.
+            }finally{dialog.enable_primary_action();}
         }});dialog.show();
     }
     async manage(method,args) {await frappe.call({method:'neo_connect.management.'+method,args:{config:this.current.name,...args},freeze:true});await this.select_client();}

@@ -6,6 +6,7 @@ NeoConnect is a Frappe custom app for controlled integration with ERPNext. Relea
 
 ## Contents
 
+- [Onboarding prerequisite correction](#onboarding-prerequisite-correction)
 - [Client setup and monitoring dashboard](#client-setup-and-monitoring-dashboard)
 - [Architecture overview](#architecture-overview)
 - [DocType model](#doctype-model)
@@ -230,3 +231,7 @@ Follow [DEVELOPMENT.md](DEVELOPMENT.md) and [CONTRIBUTING.md](../CONTRIBUTING.md
 ## Operational boundaries
 
 The verified release is 1.2.0 on Frappe 15.118.0 / ERPNext 15.119.3. Version 16 has not been tested. The customer site has not been deployed. The PowerTire flow records payment metadata without creating payment or stock postings and rejects discounts, refunds and partial invoices. Generic inherited presets have different contracts; read their configuration and test them separately before use. See [verification](VERIFICATION.md), [release notes](RELEASE_v1.2.0.md) and [changelog](../CHANGELOG.md).
+
+## Onboarding prerequisite correction
+
+See [required custom defaults](MAGENTO_REQUIRED_DEFAULTS.md) for the correction workflow, validation boundaries and v1.3.1 verification.

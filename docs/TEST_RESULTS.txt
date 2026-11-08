@@ -142,3 +142,9 @@ Sandbox extended security: 23 distinct checks; 21 full status/trace passes.
 Two rate-limit rejections: HTTP 429 and persisted audit PASS; external JSON/trace
 headers replaced by hosting HTML response (deployment limitation).
 See SANDBOX_ACCEPTANCE_2026-10-30.md for detailed boundaries and site changes.
+
+2026-11-05 / v1.3.1 mandatory custom defaults correction
+59 Python unit/mock tests: PASS (7 new prerequisite regressions)
+2 JavaScript setup/edit rejection and retry cases: PASS
+Python compilation, JavaScript syntax, git diff whitespace: PASS
+Live site was not modified; deployment and live invoice verification pending.

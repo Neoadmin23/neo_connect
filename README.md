@@ -1,6 +1,6 @@
 # NeoConnect for ERPNext
 
-**Current version:** 1.3.0
+**Current version:** 1.3.1
 
 Repository: [AlphaX-SAAS/neo_connect](https://github.com/AlphaX-SAAS/neo_connect)
 
@@ -353,3 +353,7 @@ The inherited generic presets and workflows above are separate from the verified
 ## Contributing
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). Preserve native permissions, duplicate protection and transaction/audit guarantees. Keep schema, contract, diagrams, tests and release notes together with each behavior change. Submit focused pull requests against `main`; never commit credentials or runtime data.
+
+### Required custom fields during onboarding
+
+If setup reports `custom_sales_representative_name`, supply its approved existing value in Client custom field defaults. v1.3.1 improves the validation guidance and retry behavior. See [admin correction steps](docs/MAGENTO_REQUIRED_DEFAULTS.md).

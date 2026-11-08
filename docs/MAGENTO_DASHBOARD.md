@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [Required custom defaults troubleshooting](#required-custom-defaults-troubleshooting)
 - [Purpose and access](#purpose-and-access)
 - [Architecture](#architecture)
 - [Onboard a client](#onboard-a-client)
@@ -160,3 +161,7 @@ Run unit discovery, Python compilation, JavaScript syntax checks and real stagin
 - The dashboard uses the existing complete-order contract: no partial invoices, returns, stock posting or Payment Entries. Magento payment information does not mark the invoice paid. ZATCA clearance/reporting is separate.
 - HMAC signs the raw body; it does not add a timestamp/nonce anti-replay protocol. Existing order identity/content-hash deduplication protects invoice retries.
 - Hosting proxies may rewrite HTTP 429 responses. Preserve HTTP status, JSON content and trace headers in the proxy configuration where supported. A client must handle a non-JSON 429 with backoff, retaining the same order identity; correlate site logs by time/user/order when the proxy removes trace headers.
+
+## Required custom defaults troubleshooting
+
+When setup reports a required sales representative, follow [these admin correction steps](MAGENTO_REQUIRED_DEFAULTS.md). v1.3.1 improves the message and dialog retry behavior; the JSON workaround also works on v1.3.0.

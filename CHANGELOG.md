@@ -4,6 +4,14 @@
 
 Changes follow semantic versioning. Versions 1.1.0 and 1.2.0 were developed locally from the supplied 1.0.0 sample before the initial repository publication. The first published release is 1.2.0.
 
+## [1.3.1] - 2026-11-05
+
+### Fixed
+- Explain missing mandatory Sales Invoice custom defaults using labels, fieldnames, Link targets/Select options and JSON correction guidance.
+- Keep setup/edit dialogs available for correction after rejected requests without an uncaught promise rejection.
+- Preserve required-field and master validation; escape metadata in displayed prerequisite instructions.
+- Add [admin correction steps](docs/MAGENTO_REQUIRED_DEFAULTS.md), seven Python regressions and two JavaScript dialog cases. 59 Python tests and both JavaScript cases passed locally; live deployment remains pending.
+
 ## [1.3.0] - 2026-10-30
 
 Magento client setup and monitoring dashboard. [Upgrade notes](docs/RELEASE_v1.3.0.md).
